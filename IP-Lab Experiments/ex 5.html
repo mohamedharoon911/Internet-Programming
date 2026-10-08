@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Reservation System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #eef3f8;
+            margin: 0;
+        }
+
+        header {
+            background: #1565c0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 25px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #aaa;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #1565c0;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #0d47a1;
+        }
+
+        .flight {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        .ticket {
+            background: #e8f5e9;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>✈ Flight Reservation System</h1>
+</header>
+
+<div class="container">
+
+    <h2>Search Flight</h2>
+
+    <input type="text" id="from" placeholder="From">
+    <input type="text" id="to" placeholder="Destination">
+
+    <input type="date" id="date">
+
+    <select id="class">
+        <option>Economy</option>
+        <option>Business</option>
+        <option>First Class</option>
+    </select>
+
+    <button onclick="searchFlights()">Search Flights</button>
+
+    <div id="results"></div>
+
+    <div id="booking" style="display:none">
+
+        <h2>Passenger Details</h2>
+
+        <input type="text" id="name" placeholder="Passenger Name">
+        <input type="email" id="email" placeholder="Email">
+        <input type="text" id="phone" placeholder="Phone Number">
+
+        <button onclick="bookFlight()">Book Ticket</button>
+
+    </div>
+
+    <div id="ticket"></div>
+
+</div>
+
+<script>
+
+let selectedFlight = "";
+
+function searchFlights() {
+
+    let from = document.getElementById("from").value;
+    let to = document.getElementById("to").value;
+
+    if (from == "" || to == "") {
+        alert("Enter source and destination");
+        return;
+    }
+
+    document.getElementById("results").innerHTML = `
+        <div class="flight">
+            <h3>Air India</h3>
+            <p>${from} → ${to}</p>
+            <p>Departure: 10:00 AM</p>
+            <p>Arrival: 12:30 PM</p>
+            <p>Price: ₹5,500</p>
+            <p>Seats Available: 25</p>
+            <button onclick="selectFlight('Air India')">
+                Select Flight
+            </button>
+        </div>
+
+        <div class="flight">
+            <h3>IndiGo</h3>
+            <p>${from} → ${to}</p>
+            <p>Departure: 2:00 PM</p>
+            <p>Arrival: 4:30 PM</p>
+            <p>Price: ₹4,800</p>
+            <p>Seats Available: 18</p>
+            <button onclick="selectFlight('IndiGo')">
+                Select Flight
+            </button>
+        </div>
+    `;
+}
+
+function selectFlight(flight) {
+
+    selectedFlight = flight;
+
+    document.getElementById("booking").style.display = "block";
+
+    alert(flight + " selected");
+}
+
+function bookFlight() {
+
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+    let phone = document.getElementById("phone").value;
+
+    if (name == "" || email == "" || phone == "") {
+        alert("Please enter all passenger details");
+        return;
+    }
+
+    let pnr = "FL" + Math.floor(100000 + Math.random() * 900000);
+
+    document.getElementById("ticket").innerHTML = `
+        <div class="ticket">
+            <h2>🎫 Booking Confirmed</h2>
+            <p><b>Passenger:</b> ${name}</p>
+            <p><b>Flight:</b> ${selectedFlight}</p>
+            <p><b>Route:</b>
+                ${document.getElementById("from").value}
+                →
+                ${document.getElementById("to").value}
+            </p>
+            <p><b>Class:</b>
+                ${document.getElementById("class").value}
+            </p>
+            <p><b>PNR:</b> ${pnr}</p>
+            <p><b>Status:</b> Confirmed</p>
+
+            <button onclick="window.print()">Print Ticket</button>
+        </div>
+    `;
+}
+
+</script>
+
+</body>
+</html>

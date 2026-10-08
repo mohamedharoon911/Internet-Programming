@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Booking System</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #f2f2f2;
+        }
+
+        header {
+            background: #263238;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            background: #37474f;
+            padding: 12px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            margin: 15px;
+            text-decoration: none;
+        }
+
+        .box {
+            background: white;
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        input, select, textarea, button {
+            padding: 10px;
+            margin: 7px;
+        }
+
+        button {
+            background: #263238;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .room {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Grand Palace Hotel</h1>
+    <p>Online Hotel Room Booking System</p>
+</header>
+
+<nav>
+    <a href="#home">Home</a>
+    <a href="#rooms">Rooms</a>
+    <a href="#booking">Booking</a>
+    <a href="#history">My Bookings</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+</nav>
+
+<div class="box" id="home">
+    <h2>Search Hotel</h2>
+
+    <input type="text" placeholder="Destination">
+
+    <input type="date">
+
+    <input type="date">
+
+    <input type="number" placeholder="Guests" min="1">
+
+    <button onclick="alert('Searching available rooms...')">
+        Search
+    </button>
+</div>
+
+<div class="box" id="rooms">
+    <h2>Available Rooms</h2>
+
+    <div class="room">
+        <h3>Single Room</h3>
+        <p>Price: ₹1500 / night</p>
+        <p>WiFi | AC | TV</p>
+        <button onclick="book('Single Room',1500)">
+            Book Now
+        </button>
+    </div>
+
+    <div class="room">
+        <h3>Double Room</h3>
+        <p>Price: ₹2500 / night</p>
+        <p>WiFi | AC | TV | Breakfast</p>
+        <button onclick="book('Double Room',2500)">
+            Book Now
+        </button>
+    </div>
+
+    <div class="room">
+        <h3>Deluxe Room</h3>
+        <p>Price: ₹3500 / night</p>
+        <p>WiFi | AC | TV | Mini Bar</p>
+        <button onclick="book('Deluxe Room',3500)">
+            Book Now
+        </button>
+    </div>
+
+    <div class="room">
+        <h3>Suite Room</h3>
+        <p>Price: ₹5000 / night</p>
+        <p>WiFi | AC | TV | Living Room</p>
+        <button onclick="book('Suite Room',5000)">
+            Book Now
+        </button>
+    </div>
+</div>
+
+<div class="box" id="booking">
+    <h2>Book Your Room</h2>
+
+    <form onsubmit="confirmBooking(); return false;">
+
+        <input type="text" id="name"
+               placeholder="Full Name" required><br>
+
+        <input type="email"
+               placeholder="Email" required><br>
+
+        <input type="tel"
+               placeholder="Phone Number" required><br>
+
+        <select id="room" required>
+            <option value="">Select Room</option>
+            <option>Single Room</option>

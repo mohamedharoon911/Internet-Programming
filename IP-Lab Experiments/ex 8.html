@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Appointment Booking</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #eef7f9;
+        }
+
+        header {
+            background: #00838f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 850px;
+            margin: 25px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #aaa;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #00838f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #006064;
+        }
+
+        .doctor {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 8px;
+        }
+
+        .doctor button {
+            width: 200px;
+        }
+
+        .confirmation {
+            background: #e0f2f1;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏥 MedCare Hospital</h1>
+    <p>Online Appointment Booking System</p>
+</header>
+
+<div class="container">
+
+    <h2>Find a Doctor</h2>
+
+    <input type="text" id="location"
+           placeholder="Enter location">
+
+    <select id="specialty">
+        <option value="all">All Specialties</option>
+        <option value="Cardiology">Cardiology</option>
+        <option value="Dermatology">Dermatology</option>
+        <option value="Neurology">Neurology</option>
+        <option value="General">General Medicine</option>
+    </select>
+
+    <button onclick="searchDoctors()">
+        Search Doctors
+    </button>
+
+    <div id="doctorList"></div>
+
+    <div id="booking" style="display:none">
+
+        <h2>Book Appointment</h2>
+
+        <p>
+            <b>Doctor:</b>
+            <span id="selectedDoctor"></span>
+        </p>
+
+        <input type="text" id="patient"
+               placeholder="Patient Name">
+
+        <input type="text" id="phone"
+               placeholder="Phone Number">
+
+        <input type="email" id="email"
+               placeholder="Email">
+
+        <label>Appointment Date</label>
+        <input type="date" id="date">
+
+        <label>Appointment Time</label>
+
+        <select id="time">
+            <option>09:00 AM</option>
+            <option>10:00 AM</option>
+            <option>11:00 AM</option>
+            <option>02:00 PM</option>
+            <option>03:00 PM</option>
+            <option>04:00 PM</option>
+        </select>
+
+        <textarea id="reason"
+                  placeholder="Reason for appointment"></textarea>
+
+        <button onclick="bookAppointment()">
+            Confirm Appointment
+        </button>
+
+    </div>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+const doctors = [
+    {
+        name: "Dr. Ravi Kumar",
+        specialty: "Cardiology",
+        hospital: "MedCare Hospital"
+    },
+    {
+        name: "Dr. Priya Sharma",
+        specialty: "Dermatology",
+        hospital: "MedCare Hospital"
+    },
+    {
+        name: "Dr. Arun Kumar",
+        specialty: "Neurology",
+        hospital: "MedCare Hospital"
+    },
+    {
+        name: "Dr. Meena Devi",
+        specialty: "General",
+        hospital: "MedCare Hospital"
+    }
+];
+
+let selectedDoctor = "";
+
+function searchDoctors() {
+
+    let specialty =
+        document.getElementById("specialty").value;
+
+    let result = doctors.filter(doctor =>
+        specialty == "all" ||
+        doctor.specialty == specialty
+    );
+
+    let output = "";
+
+    if (result.length == 0) {
+
+        output = "<p>No doctors found.</p>";
+
+    } else {
+
+        result.forEach(doctor => {
+
+            output += `
+                <div class="doctor">
+
+                    <h3>👨‍⚕️ ${doctor.name}</h3>
+
+                    <p>
+                        <b>Specialty:</b>
+                        ${doctor.specialty}
+                    </p>
+
+                    <p>
+                        <b>Hospital:</b>
+                        ${doctor.hospital}
+                    </p>
+
+                    <p>
+                        <b>Available:</b>
+                        Mon - Sat
+                    </p>
+
+                    <button onclick="selectDoctor('${doctor.name}')">
+                        Book Appointment
+                    </button>
+
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById("doctorList")
+        .innerHTML = output;
+}
+
+function selectDoctor(name) {
+
+    selectedDoctor = name;
+
+    document.getElementById("selectedDoctor")
+        .innerText = name;
+
+    document.getElementById("booking")
+        .style.display = "block";
+
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function bookAppointment() {
+
+    let patient =
+        document.getElementById("patient").value;
+
+    let phone =
+        document.getElementById("phone").value;
+
+    let email =
+        document.getElementById("email").value;
+
+    let date =
+        document.getElementById("date").value;
+
+    let time =
+        document.getElementById("time").value;
+
+    let reason =
+        document.getElementById("reason").value;
+
+    if (patient == "" ||
+        phone == "" ||
+        email == "" ||
+        date == "") {
+
+        alert("Please fill all required details");
+        return;
+    }
+
+    let appointmentId =
+        "MED" + Math.floor(10000 + Math.random() * 90000);
+
+    document.getElementById("result").innerHTML = `
+
+        <div class="confirmation">
+
+            <h2>✅ Appointment Confirmed</h2>
+
+            <p>
+                <b>Appointment ID:</b>
+                ${appointmentId}
+            </p>
+
+            <p>
+                <b>Patient:</b>
+                ${patient}
+            </p>
+
+            <p>
+                <b>Doctor:</b>
+                ${selectedDoctor}
+            </p>
+
+            <p>
+                <b>Date:</b>
+                ${date}
+            </p>
+
+            <p>
+                <b>Time:</b>
+                ${time}
+            </p>
+
+            <p>
+                <b>Reason:</b>
+                ${reason || "General Consultation"}
+            </p>
+
+            <p>
+                <b>Status:</b> Confirmed
+            </p>
+
+            <button onclick="window.print()">
+                Print Appointment
+            </button>
+
+        </div>
+    `;
+}
+
+searchDoctors();
+
+</script>
+
+</body>
+</html>

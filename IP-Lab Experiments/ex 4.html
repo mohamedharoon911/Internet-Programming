@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Train Reservation System</title>
+
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial;margin:0;background:#f3f4f6}
+header{background:#174ea6;color:white;text-align:center;padding:20px}
+nav{background:#222;padding:12px;text-align:center}
+nav button{background:none;color:white;border:0;margin:5px;cursor:pointer}
+.box{background:white;width:90%;max-width:1000px;margin:20px auto;padding:20px;border-radius:10px}
+input,select{padding:10px;margin:5px;width:95%}
+button{padding:10px 15px;background:#174ea6;color:white;border:0;border-radius:5px;cursor:pointer}
+button:hover{background:#0d3575}
+.hidden{display:none}
+.train{border:1px solid #ccc;padding:15px;margin:10px 0;border-radius:8px}
+.seat{display:inline-block;padding:12px;margin:5px;background:#ddd;cursor:pointer}
+.selected{background:green;color:white}
+.booked{background:red;color:white;cursor:not-allowed}
+.success{color:green;font-weight:bold}
+.error{color:red;font-weight:bold}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid #aaa;padding:8px;text-align:center}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🚆 Train Reservation System</h1>
+<p>Search • Reserve • Check PNR • Cancel</p>
+</header>
+
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('search')">Search Train</button>
+<button onclick="show('pnr')">PNR Status</button>
+<button onclick="show('history')">My Bookings</button>
+<button onclick="show('admin')">Admin</button>
+<button onclick="logout()">Logout</button>
+</nav>
+
+<!-- HOME -->
+
+<div class="box" id="home">
+<h2>Welcome</h2>
+<p>Online Train Reservation System</p>
+<ul>
+<li>Train search</li>
+<li>Seat availability</li>
+<li>Online reservation</li>
+<li>PNR generation</li>
+<li>PNR status</li>
+<li>Ticket cancellation</li>
+<li>Refund calculation</li>
+<li>Booking history</li>
+<li>Admin management</li>
+</ul>
+</div>
+
+<!-- REGISTER -->
+
+<div class="box hidden" id="register">
+<h2>Passenger Registration</h2>
+
+<input id="rname" placeholder="Full Name">
+<input id="remail" placeholder="Email">
+<input id="rphone" placeholder="Phone">
+<input id="rpass" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+<p id="regmsg"></p>
+</div>
+
+<!-- LOGIN -->
+
+<div class="box hidden" id="login">
+<h2>Passenger Login</h2>
+
+<input id="lemail" placeholder="Email">
+<input id="lpass" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<p id="loginmsg"></p>
+</div>
+
+<!-- SEARCH -->
+
+<div class="box hidden" id="search">
+
+<h2>Search Train</h2>
+
+<input id="from" placeholder="Origin Station">
+<input id="to" placeholder="Destination Station">
+<input id="date" type="date">
+
+<select id="classType">
+<option>Sleeper</option>
+<option>AC 3 Tier</option>
+<option>AC 2 Tier</option>
+<option>First Class</option>
+</select>
+
+<button onclick="searchTrain()">Search</button>
+
+<div id="trainList"></div>
+
+</div>
+
+<!-- BOOKING -->
+
+<div class="box hidden" id="booking">
+
+<h2>Reserve Ticket</h2>
+
+<p id="selectedTrain"></p>
+
+<h3>Select Seat</h3>
+
+<div id="seats"></div>
+
+<h3>Passenger Details</h3>
+
+<input id="pname" placeholder="Passenger Name">
+<input id="page" type="number" placeholder="Age">
+
+<select id="pgender">
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+
+<br><br>
+
+<button onclick="confirmBooking()">Pay & Book Ticket</button>
+
+<p id="bookmsg"></p>
+
+</div>
+
+<!-- PNR -->
+
+<div class="box hidden" id="pnr">
+
+<h2>Check PNR Status</h2>
+
+<input id="pnrInput" placeholder="Enter PNR Number">
+
+<button onclick="checkPNR()">Check PNR</button>
+
+<div id="pnrResult"></div>
+
+</div>
+
+<!-- HISTORY -->
+
+<div class="box hidden" id="history">
+
+<h2>My Booking History</h2>
+
+<div id="historyData"></div>
+
+</div>
+
+<!-- ADMIN -->
+
+<div class="box hidden" id="admin">
+
+<h2>Admin Panel</h2>
+
+<h3>Add Train</h3>
+
+<input id="aname" placeholder="Train Name">
+<input id="anum" placeholder="Train Number">
+<input id="afrom" placeholder="From">
+<input id="ato" placeholder="To">
+<input id="aprice" type="number" placeholder="Fare">
+<input id="aseats" type="number" placeholder="Seats">
+
+<button onclick="addTrain()">Add Train</button>
+
+<h3>Train List</h3>
+
+<div id="adminTrains"></div>
+
+<h3>All Bookings</h3>
+
+<div id="adminBookings"></div>
+
+</div>
+
+<script>
+
+let currentUser=localStorage.getItem("currentUser");
+let selectedTrain=null;
+let selectedSeat=null;
+
+/* DEFAULT TRAINS */
+
+if(!localStorage.getItem("trains")){
+
+let trains=[
+{
+id:1,
+name:"Chennai Express",
+number:"12601",
+from:"Chennai",
+to:"Bangalore",
+price:500,
+seats:20
+},
+{
+id:2,
+name:"Coimbatore Express",
+number:"12673",
+from:"Chennai",
+to:"Coimbatore",
+price:600,
+seats:15
+},
+{
+id:3,
+name:"Kerala Express",
+number:"12625",
+from:"Chennai",
+to:"Kochi",
+price:800,
+seats:25
+}
+];
+
+localStorage.setItem("trains",JSON.stringify(trains));
+
+}
+
+/* SHOW PAGE */
+
+function show(id){
+
+document.querySelectorAll(".box").forEach(x=>{
+x.classList.add("hidden");
+});
+
+document.getElementById(id).classList.remove("hidden");
+
+if(id=="history")loadHistory();
+
+if(id=="admin")loadAdmin();
+
+}
+
+/* REGISTER */
+
+function register(){
+
+let users=JSON.parse(localStorage.getItem("users")||"[]");
+
+let user={
+name:rname.value,
+email:remail.value,
+phone:rphone.value,
+password:rpass.value
+};
+
+if(!user.name||!user.email||!user.password){
+
+regmsg.innerHTML="<span class='error'>Fill all details</span>";
+return;
+
+}
+
+if(users.some(x=>x.email==user.email)){
+
+regmsg.innerHTML="<span class='error'>Email already registered</span>";
+return;
+
+}
+
+users.push(user);
+
+localStorage.setItem("users",JSON.stringify(users));
+
+regmsg.innerHTML="<span class='success'>Registration successful</span>";
+
+}
+
+/* LOGIN */
+
+function login(){
+
+let users=JSON.parse(localStorage.getItem("users")||"[]");
+
+let user=users.find(x=>
+x.email==lemail.value &&
+x.password==lpass.value
+);
+
+if(user){
+
+localStorage.setItem("currentUser",user.email);
+currentUser=user.email;
+
+loginmsg.innerHTML="<span class='success'>Login successful</span>";
+
+}else{
+
+loginmsg.innerHTML="<span class='error'>Invalid email or password</span>";
+
+}
+
+}
+
+/* LOGOUT */
+
+function logout(){
+
+localStorage.removeItem("currentUser");
+currentUser=null;
+
+alert("Logged out");
+
+show("home");
+
+}
+
+/* SEARCH TRAIN */
+
+function searchTrain(){
+
+let fromValue=from.value.toLowerCase();
+let toValue=to.value.toLowerCase();
+
+let trains=JSON.parse(localStorage.getItem("trains"));
+
+let result=trains.filter(x=>
+x.from.toLowerCase().includes(fromValue) &&
+x.to.toLowerCase().includes(toValue)
+);
+
+trainList.innerHTML="";
+
+if(result.length==0){
+
+trainList.innerHTML="<p>No trains found</p>";
+return;
+
+}
+
+result.forEach(t=>{
+
+trainList.innerHTML+=`
+
+<div class="train">
+
+<h3>${t.name}</h3>
+
+<p>Train No: ${t.number}</p>
+<p>Route: ${t.from} → ${t.to}</p>
+<p>Fare: ₹${t.price}</p>
+<p>Available Seats: ${t.seats}</p>
+
+<button onclick="openBooking(${t.id})">
+Reserve Ticket
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* OPEN BOOKING */
+
+function openBooking(id){
+
+if(!currentUser){
+
+alert("Please login first");
+show("login");
+return;
+
+}
+
+let trains=JSON.parse(localStorage.getItem("trains"));
+
+selectedTrain=trains.find(x=>x.id==id);
+
+selectedSeat=null;
+
+selectedTrainText();
+
+createSeats();
+
+show("booking");
+
+}
+
+/* TRAIN DETAILS */
+
+function selectedTrainText(){
+
+selectedTrain.innerHTML="";
+
+}
+
+/* CREATE SEATS */
+
+function createSeats(){
+
+let html="";
+
+for(let i=1;i<=selectedTrain.seats;i++){
+
+html+=`
+<span class="seat"
+onclick="selectSeat(this,${i})">
+${i}
+</span>
+`;
+
+}
+
+seats.innerHTML=html;
+
+}
+
+/* SELECT SEAT */
+
+function selectSeat(element,num){
+
+document.querySelectorAll(".seat").forEach(x=>{
+x.classList.remove("selected");
+});
+
+element.classList.add("selected");
+
+selectedSeat=num;
+
+}
+
+/* BOOK */
+
+function confirmBooking(){
+
+if(!currentUser){
+
+alert("Login required");
+return;
+
+}
+
+if(!selectedSeat){
+
+alert("Select a seat");
+return;
+
+}
+
+if(!pname.value||!page.value){
+
+alert("Enter passenger details");
+return;
+
+}
+
+let bookings=
+JSON.parse(localStorage.getItem("bookings")||"[]");
+
+let pnr="PNR"+Math.floor(100000+Math.random()*900000);
+
+let booking={
+
+pnr:pnr,
+
+email:currentUser,
+
+train:selectedTrain.name,
+
+number:selectedTrain.number,
+
+from:selectedTrain.from,
+
+to:selectedTrain.to,
+
+seat:selectedSeat,
+
+passenger:pname.value,
+
+age:page.value,
+
+classType:classType.value,
+
+fare:selectedTrain.price,
+
+status:"CONFIRMED"
+
+};
+
+bookings.push(booking);
+
+localStorage.setItem("bookings",JSON.stringify(bookings));
+
+/* REDUCE SEAT */
+
+let trains=
+JSON.parse(localStorage.getItem("trains"));
+
+let t=trains.find(x=>x.id==selectedTrain.id);
+
+t.seats--;
+
+localStorage.setItem("trains",JSON.stringify(trains));
+
+bookmsg.innerHTML=`
+
+<p class="success">
+
+Ticket booked successfully!<br><br>
+
+<strong>PNR: ${pnr}</strong><br>
+
+Train: ${booking.train}<br>
+
+Seat: ${booking.seat}<br>
+
+Fare: ₹${booking.fare}
+
+</p>
+
+`;
+
+}
+
+/* PNR STATUS */
+
+function checkPNR(){
+
+let bookings=
+JSON.parse(localStorage.getItem("bookings")||"[]");
+
+let b=bookings.find(x=>x.pnr==pnrInput.value);
+
+if(!b){
+
+pnrResult.innerHTML=
+"<p class='error'>PNR not found</p>";
+
+return;
+
+}
+
+pnrResult.innerHTML=`
+
+<h3>PNR Details</h3>
+
+<p>PNR: ${b.pnr}</p>
+<p>Passenger: ${b.passenger}</p>
+<p>Train: ${b.train}</p>
+<p>Route: ${b.from} → ${b.to}</p>
+<p>Seat: ${b.seat}</p>
+<p>Class: ${b.classType}</p>
+<p>Fare: ₹${b.fare}</p>
+<p>Status: <b>${b.status}</b></p>
+
+${b.status=="CONFIRMED" ?
+
+`<button onclick="cancelTicket('${b.pnr}')">
+Cancel Ticket
+</button>`:""}
+
+`;
+
+}
+
+/* HISTORY */
+
+function loadHistory(){
+
+if(!currentUser){
+
+historyData.innerHTML="Please login first";
+return;
+
+}
+
+let bookings=
+JSON.parse(localStorage.getItem("bookings")||"[]");
+
+let mine=bookings.filter(x=>x.email==currentUser);
+
+if(mine.length==0){
+
+historyData.innerHTML="No bookings found";
+return;
+
+}
+
+let html="<table>";
+
+html+=`
+<tr>
+<th>PNR</th>
+<th>Train</th>
+<th>Seat</th>
+<th>Fare</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+`;
+
+mine.forEach(b=>{
+
+html+=`
+
+<tr>
+
+<td>${b.pnr}</td>
+<td>${b.train}</td>
+<td>${b.seat}</td>
+<td>₹${b.fare}</td>
+<td>${b.status}</td>
+
+<td>
+
+${b.status=="CONFIRMED"?
+
+`<button onclick="cancelTicket('${b.pnr}')">
+Cancel
+</button>`:"Cancelled"}
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+html+="</table>";
+
+historyData.innerHTML=html;
+
+}
+
+/* CANCEL */
+
+function cancelTicket(pnr){
+
+let bookings=
+JSON.parse(localStorage.getItem("bookings")||"[]");
+
+let b=bookings.find(x=>x.pnr==pnr);
+
+if(!b)return;
+
+let refund=b.fare*0.75;
+
+b.status="CANCELLED";
+b.refund=refund;
+
+localStorage.setItem("bookings",JSON.stringify(bookings));
+
+alert(
+"Ticket cancelled\nRefund Amount: ₹"+refund
+);
+
+checkPNR();
+
+loadHistory();
+
+}
+
+/* ADMIN ADD TRAIN */
+
+function addTrain(){
+
+let trains=
+JSON.parse(localStorage.getItem("trains"));
+
+let train={
+
+id:Date.now(),
+
+name:aname.value,
+
+number:anum.value,
+
+from:afrom.value,
+
+to:ato.value,
+
+price:Number(aprice.value),
+
+seats:Number(aseats.value)
+
+};
+
+trains.push(train);
+
+localStorage.setItem("trains",JSON.stringify(trains));
+
+alert("Train added");
+
+loadAdmin();
+
+}
+
+/* ADMIN */
+
+function loadAdmin(){
+
+let trains=
+JSON.parse(localStorage.getItem("trains"));
+
+adminTrains.innerHTML="";
+
+trains.forEach(t=>{
+
+adminTrains.innerHTML+=`
+
+<div class="train">
+
+<b>${t.name}</b><br>
+
+Train No: ${t.number}<br>
+
+${t.from} → ${t.to}<br>
+
+Fare: ₹${t.price}<br>
+
+Seats: ${t.seats}
+
+</div>
+
+`;
+
+});
+
+/* BOOKINGS */
+
+let bookings=
+JSON.parse(localStorage.getItem("bookings")||"[]");
+
+adminBookings.innerHTML="";
+
+bookings.forEach(b=>{
+
+adminBookings.innerHTML+=`
+
+<div class="train">
+
+PNR: ${b.pnr}<br>
+Passenger: ${b.passenger}<br>
+Train: ${b.train}<br>
+Seat: ${b.seat}<br>
+Fare: ₹${b.fare}<br>
+Status: ${b.status}
+
+</div>
+
+`;
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

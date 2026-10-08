@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Beauty Parlour Appointment</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #fff0f5;
+            margin: 0;
+        }
+
+        header {
+            background: #c2185b;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 25px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #aaa;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #c2185b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #880e4f;
+        }
+
+        .services {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .service {
+            border: 1px solid #ddd;
+            padding: 15px;
+            width: 200px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .service span {
+            font-size: 40px;
+        }
+
+        .confirmation {
+            background: #fce4ec;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>💇 Beauty Parlour</h1>
+    <p>Online Appointment Booking</p>
+</header>
+
+<div class="container">
+
+    <h2>Our Services</h2>
+
+    <div class="services">
+
+        <div class="service">
+            <span>💇‍♀️</span>
+            <h3>Hair Styling</h3>
+            <p>₹500</p>
+            <button onclick="selectService('Hair Styling')">
+                Select
+            </button>
+        </div>
+
+        <div class="service">
+            <span>💅</span>
+            <h3>Manicure</h3>
+            <p>₹400</p>
+            <button onclick="selectService('Manicure')">
+                Select
+            </button>
+        </div>
+
+        <div class="service">
+            <span>💆</span>
+            <h3>Facial</h3>
+            <p>₹800</p>
+            <button onclick="selectService('Facial')">
+                Select
+            </button>
+        </div>
+
+    </div>
+
+    <div id="booking" style="display:none">
+
+        <h2>Book Appointment</h2>
+
+        <p>
+            <b>Selected Service:</b>
+            <span id="selectedService"></span>
+        </p>
+
+        <label>Customer Name</label>
+        <input type="text" id="name"
+               placeholder="Enter your name">
+
+        <label>Phone Number</label>
+        <input type="text" id="phone"
+               placeholder="Enter phone number">
+
+        <label>Select Stylist</label>
+
+        <select id="stylist">
+            <option>Priya</option>
+            <option>Anjali</option>
+            <option>Meena</option>
+        </select>
+
+        <label>Select Date</label>
+
+        <input type="date" id="date">
+
+        <label>Select Time</label>
+
+        <select id="time">
+            <option>10:00 AM</option>
+            <option>11:00 AM</option>
+            <option>12:00 PM</option>
+            <option>02:00 PM</option>
+            <option>03:00 PM</option>
+            <option>04:00 PM</option>
+            <option>05:00 PM</option>
+        </select>
+
+        <button onclick="bookAppointment()">
+            Book Appointment
+        </button>
+
+    </div>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+let selectedService = "";
+
+function selectService(service) {
+
+    selectedService = service;
+
+    document.getElementById("selectedService")
+        .innerText = service;
+
+    document.getElementById("booking")
+        .style.display = "block";
+
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function bookAppointment() {
+
+    let name =
+        document.getElementById("name").value;
+
+    let phone =
+        document.getElementById("phone").value;
+
+    let stylist =
+        document.getElementById("stylist").value;
+
+    let date =
+        document.getElementById("date").value;
+
+    let time =
+        document.getElementById("time").value;
+
+    if (name == "" || phone == "" || date == "") {
+        alert("Please fill all details");
+        return;
+    }
+
+    let appointmentId =
+        "APT" + Math.floor(10000 + Math.random() * 90000);
+
+    document.getElementById("result").innerHTML = `
+
+        <div class="confirmation">
+
+            <h2>✅ Appointment Confirmed</h2>
+
+            <p>
+                <b>Appointment ID:</b>
+                ${appointmentId}
+            </p>
+
+            <p>
+                <b>Customer:</b>
+                ${name}
+            </p>
+
+            <p>
+                <b>Service:</b>
+                ${selectedService}
+            </p>
+
+            <p>
+                <b>Stylist:</b>
+                ${stylist}
+            </p>
+
+            <p>
+                <b>Date:</b>
+                ${date}
+            </p>
+
+            <p>
+                <b>Time:</b>
+                ${time}
+            </p>
+
+            <p>
+                <b>Status:</b> Confirmed
+            </p>
+
+            <button onclick="window.print()">
+                Print Appointment
+            </button>
+
+        </div>
+    `;
+}
+
+</script>
+
+</body>
+</html>

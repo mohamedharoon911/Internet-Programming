@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Cake Ordering</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #fff3f6;
+        }
+
+        header {
+            background: #d81b60;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 25px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #bbb;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 7px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #d81b60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ad1457;
+        }
+
+        .cakes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .cake {
+            border: 1px solid #ddd;
+            padding: 15px;
+            width: 220px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .cake span {
+            font-size: 50px;
+        }
+
+        .order {
+            background: #fce4ec;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎂 Online Cake Ordering</h1>
+</header>
+
+<div class="container">
+
+    <h2>Search Cake</h2>
+
+    <input type="text" id="search"
+           placeholder="Search cake"
+           onkeyup="searchCake()">
+
+    <select id="category" onchange="searchCake()">
+        <option value="all">All Categories</option>
+        <option value="Birthday">Birthday</option>
+        <option value="Wedding">Wedding</option>
+        <option value="Chocolate">Chocolate</option>
+    </select>
+
+    <div class="cakes" id="cakeList"></div>
+
+    <div id="orderSection" style="display:none">
+
+        <h2>Place Order</h2>
+
+        <input type="text" id="customer"
+               placeholder="Customer Name">
+
+        <input type="text" id="address"
+               placeholder="Delivery Address">
+
+        <input type="text" id="phone"
+               placeholder="Phone Number">
+
+        <select id="size">
+            <option>1 Kg</option>
+            <option>2 Kg</option>
+            <option>3 Kg</option>
+        </select>
+
+        <textarea id="message"
+                  placeholder="Cake Message"></textarea>
+
+        <button onclick="placeOrder()">
+            Place Order
+        </button>
+
+    </div>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+const cakes = [
+    {
+        name: "Chocolate Cake",
+        category: "Chocolate",
+        price: 600
+    },
+    {
+        name: "Birthday Cake",
+        category: "Birthday",
+        price: 700
+    },
+    {
+        name: "Wedding Cake",
+        category: "Wedding",
+        price: 1500
+    },
+    {
+        name: "Black Forest",
+        category: "Chocolate",
+        price: 800
+    }
+];
+
+let selectedCake = "";
+
+function displayCakes(list) {
+
+    let output = "";
+
+    list.forEach(cake => {
+
+        output += `
+            <div class="cake">
+                <span>🎂</span>
+
+                <h3>${cake.name}</h3>
+
+                <p>Category: ${cake.category}</p>
+
+                <p>Price: ₹${cake.price}</p>
+
+                <button onclick="selectCake('${cake.name}')">
+                    Add to Cart
+                </button>
+            </div>
+        `;
+    });
+
+    document.getElementById("cakeList").innerHTML = output;
+}
+
+function searchCake() {
+
+    let search =
+        document.getElementById("search").value.toLowerCase();
+
+    let category =
+        document.getElementById("category").value;
+
+    let result = cakes.filter(cake => {
+
+        let nameMatch =
+            cake.name.toLowerCase().includes(search);
+
+        let categoryMatch =
+            category == "all" ||
+            cake.category == category;
+
+        return nameMatch && categoryMatch;
+    });
+
+    displayCakes(result);
+}
+
+function selectCake(name) {
+
+    selectedCake = name;
+
+    document.getElementById("orderSection")
+        .style.display = "block";
+
+    alert(name + " added to cart");
+}
+
+function placeOrder() {
+
+    let customer =
+        document.getElementById("customer").value;
+
+    let address =
+        document.getElementById("address").value;
+
+    let phone =
+        document.getElementById("phone").value;
+
+    let size =
+        document.getElementById("size").value;
+
+    let message =
+        document.getElementById("message").value;
+
+    if (customer == "" ||
+        address == "" ||
+        phone == "") {
+
+        alert("Please fill all details");
+        return;
+    }
+
+    let orderId =
+        "ORD" + Math.floor(10000 + Math.random() * 90000);
+
+    document.getElementById("result").innerHTML = `
+        <div class="order">
+
+            <h2>✅ Order Confirmed</h2>
+
+            <p><b>Order ID:</b> ${orderId}</p>
+
+            <p><b>Cake:</b> ${selectedCake}</p>
+
+            <p><b>Customer:</b> ${customer}</p>
+
+            <p><b>Size:</b> ${size}</p>
+
+            <p><b>Delivery Address:</b> ${address}</p>
+
+            <p><b>Message:</b> ${message}</p>
+
+            <p><b>Status:</b> Order Placed</p>
+
+            <button onclick="window.print()">
+                Print Order
+            </button>
+
+        </div>
+    `;
+}
+
+displayCakes(cakes);
+
+</script>
+
+</body>
+</html>
