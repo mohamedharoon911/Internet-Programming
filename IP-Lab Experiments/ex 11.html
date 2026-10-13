@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Home Finder</title>
+<style>
+body{font-family:Arial;background:#f3f5f7;margin:0}
+header{background:#174c3c;color:white;text-align:center;padding:20px}
+input,select,button{padding:10px;margin:6px;border:1px solid #ccc;border-radius:5px}
+button{background:#174c3c;color:white;cursor:pointer}
+.properties{display:flex;flex-wrap:wrap;justify-content:center;gap:15px;padding:20px}
+.card{background:white;padding:18px;width:220px;border-radius:10px}
+.card h3{color:#174c3c}
+#msg{text-align:center;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+<h1>Home Finder</h1>
+<p>Find Your Dream Property</p>
+<input id="loc" placeholder="Enter location">
+<select id="type">
+<option>All</option><option>House</option><option>Land</option>
+<option>Apartment</option>
+</select>
+<input id="budget" type="number" placeholder="Maximum budget">
+<button onclick="search()">Search</button>
+</header>
+<h2 align="center">Available Properties</h2>
+<div class="properties" id="list"></div>
+<p id="msg"></p>
+<script>
+let data=[
+{name:"Modern House",loc:"Chennai",type:"House",price:4500000},
+{name:"Residential Land",loc:"Madurai",type:"Land",price:1800000},
+{name:"City Apartment",loc:"Chennai",type:"Apartment",price:3000000},
+{name:"Family House",loc:"Coimbatore",type:"House",price:3500000},
+{name:"Open Plot",loc:"Madurai",type:"Land",price:1200000}
+];
+function search(){
+let l=document.getElementById("loc").value.toLowerCase();
+let t=document.getElementById("type").value;
+let b=Number(document.getElementById("budget").value)||Infinity;
+let a=data.filter(p=>p.loc.toLowerCase().includes(l)&&
+(t=="All"||p.type==t)&&p.price<=b);
+list.innerHTML="";
+if(!a.length){list.innerHTML="<p>No properties found.</p>";return}
+a.forEach(p=>{
+list.innerHTML+=`<div class="card">
+<h3>${p.name}</h3><p>Location: ${p.loc}</p>
+<p>Type: ${p.type}</p><h3>₹${p.price.toLocaleString("en-IN")}</h3>
+<button onclick="visit('${p.name}')">Schedule Visit</button>
+</div>`;
+});
+}
+function visit(n){
+msg.innerText="Visit request submitted for "+n+". Contact the property agent to confirm.";
+}
+search();
+</script>
+</body>
+</html>

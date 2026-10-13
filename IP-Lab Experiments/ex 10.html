@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>StyleHub Fashion Store</title>
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:0}
+header{background:#29213d;color:white;padding:20px;text-align:center}
+input,select,button{padding:10px;margin:6px;border:1px solid #ccc;border-radius:5px}
+.products{display:flex;flex-wrap:wrap;justify-content:center;gap:15px}
+.card{background:white;padding:18px;width:190px;border-radius:10px;text-align:center}
+.card h3{color:#553b70}
+button{background:#553b70;color:white;cursor:pointer}
+#cart{background:white;margin:20px;padding:15px;border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+<h1>StyleHub</h1>
+<p>Discover Your Style</p>
+<input id="search" placeholder="Search fashion..." oninput="show()">
+<select id="cat" onchange="show()">
+<option>All</option><option>Men</option><option>Women</option>
+<option>Accessories</option>
+</select>
+</header>
+<h2 align="center">Fashion Collection</h2>
+<div class="products" id="products"></div>
+<div id="cart">
+<h2>Shopping Cart</h2>
+<div id="items">Your cart is empty</div>
+<h3 id="total">Total: ₹0</h3>
+<button onclick="buy()">Place Order</button>
+<p id="msg"></p>
+</div>
+<script>
+let data=[
+{name:"T-Shirt",cat:"Men",price:499},
+{name:"Jeans",cat:"Men",price:999},
+{name:"Kurti",cat:"Women",price:799},
+{name:"Dress",cat:"Women",price:1299},
+{name:"Handbag",cat:"Accessories",price:699},
+{name:"Watch",cat:"Accessories",price:899}
+];
+let cart={};
+function show(){
+let s=document.getElementById("search").value.toLowerCase();
+let c=document.getElementById("cat").value;
+products.innerHTML="";
+data.filter(p=>p.name.toLowerCase().includes(s)&&(c=="All"||p.cat==c))
+.forEach(p=>{
+products.innerHTML+=`<div class="card"><h3>${p.name}</h3>
+<p>Category: ${p.cat}</p><h3>₹${p.price}</h3>
+<button onclick="add('${p.name}')">Add to Cart</button></div>`;
+});
+}
+function add(n){cart[n]=(cart[n]||0)+1;update()}
+function update(){
+let t=0,html="";
+for(let n in cart){
+let p=data.find(x=>x.name==n),sub=p.price*cart[n];t+=sub;
+html+=`${n} - ₹${p.price} × ${cart[n]}
+<button onclick="add('${n}')">+</button>
+<button onclick="removeItem('${n}')">Remove</button><br>`;
+}
+items.innerHTML=html||"Your cart is empty";
+total.innerText="Total: ₹"+t;
+}
+function removeItem(n){delete cart[n];update()}
+function buy(){
+if(!Object.keys(cart).length){msg.innerText="Please add products first.";return}
+msg.innerText="Order placed successfully! Order ID: SH"+Date.now().toString().slice(-6);
+cart={};update();
+}
+show();
+</script>
+</body>
+</html>

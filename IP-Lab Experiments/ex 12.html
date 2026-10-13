@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>InsureEasy</title>
+<style>
+body{font-family:Arial;background:#f1f5f9;margin:0}
+header{background:#174b75;color:white;text-align:center;padding:20px}
+main{max-width:750px;margin:20px auto;padding:15px}
+.card{background:white;padding:18px;margin:12px 0;border-radius:10px}
+input,select,button{padding:10px;margin:6px;border:1px solid #ccc;border-radius:5px}
+button{background:#174b75;color:white;cursor:pointer}
+h2{color:#174b75}
+</style>
+</head>
+<body>
+<header>
+<h1>InsureEasy</h1>
+<p>Simple and Smart Insurance Management</p>
+</header>
+<main>
+<div class="card">
+<h2>Compare Insurance Policies</h2>
+<select id="type" onchange="show()">
+<option>All</option><option>Health</option>
+<option>Vehicle</option><option>Home</option>
+</select>
+<div id="policies"></div>
+</div>
+<div class="card">
+<h2>Customer & Policy Details</h2>
+<form id="f">
+<input id="name" placeholder="Customer Name" required>
+<input id="phone" placeholder="Phone Number" required>
+<select id="policy">
+<option>Health Insurance</option>
+<option>Vehicle Insurance</option>
+<option>Home Insurance</option>
+</select><br>
+<input id="amount" type="number" placeholder="Premium Amount (₹)" required>
+<input id="due" type="date" required><br>
+<button type="submit">Save Policy</button>
+</form>
+</div>
+<div class="card">
+<h2>Saved Policies</h2>
+<div id="records">No policies saved.</div>
+</div>
+<p id="msg"></p>
+</main>
+<script>
+let data=[
+{name:"Health Insurance",type:"Health",price:5000},
+{name:"Vehicle Insurance",type:"Vehicle",price:3000},
+{name:"Home Insurance",type:"Home",price:4000}
+];
+let records=[];
+function show(){
+let t=document.getElementById("type").value;
+policies.innerHTML="";
+data.filter(p=>t=="All"||p.type==t).forEach(p=>{
+policies.innerHTML+=`<p><b>${p.name}</b> — ₹${p.price}/year</p>`;
+});
+}
+f.onsubmit=function(e){
+e.preventDefault();
+records.push({
+name:name.value,phone:phone.value,policy:policy.value,
+amount:Number(amount.value),due:due.value
+});
+draw();
+f.reset();
+msg.innerText="Policy saved successfully!";
+};
+function draw(){
+records.innerHTML="";
+records.forEach((r,i)=>{
+records.innerHTML+=`<p><b>${r.name}</b> — ${r.policy}<br>
+Phone: ${r.phone}<br>Premium: ₹${r.amount}<br>
+Due Date: ${r.due}<br>
+<button onclick="remind(${i})">Check Reminder</button>
+<button onclick="del(${i})">Delete</button></p><hr>`;
+});
+if(!records.length)records.innerText="No policies saved.";
+}
+function remind(i){
+let r=records[i];
+let days=Math.ceil((new Date(r.due)-new Date())/86400000);
+msg.innerText=days<0?"Payment is overdue!":days<=7?
+"Reminder: Payment is due soon!":"No immediate reminder required.";
+}
+function del(i){records.splice(i,1);draw()}
+show();
+</script>
+</body>
+</html>

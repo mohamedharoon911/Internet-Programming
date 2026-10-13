@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TechSavvy Online Shopping</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #f2f5f9;
+        }
+
+        header {
+            background: #172554;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        input, select {
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .product {
+            background: white;
+            padding: 18px;
+            width: 220px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px #ccc;
+            text-align: center;
+        }
+
+        .product span {
+            font-size: 45px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .cart {
+            background: white;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>TechSavvy</h1>
+    <p>Online Electronics Shopping</p>
+</header>
+
+<div class="container">
+
+    <h2>Browse Products</h2>
+
+    <input type="text" id="search"
+           placeholder="Search products"
+           oninput="showProducts()">
+
+    <select id="category" onchange="showProducts()">
+        <option value="All">All Categories</option>
+        <option value="Mobile">Mobiles</option>
+        <option value="Laptop">Laptops</option>
+        <option value="Accessory">Accessories</option>
+    </select>
+
+    <div class="products" id="products"></div>
+
+    <div class="cart">
+        <h2>🛒 Shopping Cart</h2>
+        <div id="cart"></div>
+        <h3 id="total">Total: ₹0</h3>
+        <button onclick="checkout()">Place Order</button>
+    </div>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+const items = [
+    {name: "Smartphone", category: "Mobile", price: 15000, icon: "📱"},
+    {name: "Laptop", category: "Laptop", price: 45000, icon: "💻"},
+    {name: "Headphones", category: "Accessory", price: 1500, icon: "🎧"},
+    {name: "Smart Watch", category: "Accessory", price: 3000, icon: "⌚"},
+    {name: "Tablet", category: "Mobile", price: 12000, icon: "📲"}
+];
+
+let cart = [];
+
+function showProducts() {
+    let search = document.getElementById("search").value.toLowerCase();
+    let category = document.getElementById("category").value;
+
+    let list = items.filter(p =>
+        p.name.toLowerCase().includes(search) &&
+        (category === "All" || p.category === category)
+    );
+
+    document.getElementById("products").innerHTML =
+        list.map((p, i) => `
+            <div class="product">
+                <span>${p.icon}</span>
+                <h3>${p.name}</h3>
+                <p>${p.category}</p>
+                <h3>₹${p.price}</h3>
+                <button onclick="addCart('${p.name}')">
+                    Add to Cart
+                </button>
+            </div>
+        `).join("");
+
+    if (list.length === 0) {
+        document.getElementById("products").innerHTML =
+            "<p>No products found.</p>";
+    }
+}
+
+function addCart(name) {
+    let product = items.find(p => p.name === name);
+    let found = cart.find(p => p.name === name);
+
+    if (found) {
+        found.qty++;
+    } else {
+        cart.push({...product, qty: 1});
+    }
+
+    showCart();
+}
+
+function showCart() {
+    let output = "";
+    let total = 0;
+
+    cart.forEach((p, i) => {
+        total += p.price * p.qty;
+
+        output += `
+            <p>
+                ${p.name} - ₹${p.price} × ${p.qty}
+                <button onclick="removeItem(${i})">Remove</button>
+            </p>
+        `;
+    });
+
+    document.getElementById("cart").innerHTML =
+        output || "Your cart is empty.";
+
+    document.getElementById("total").innerText =
+        "Total: ₹" + total;
+}
+
+function removeItem(i) {
+    cart.splice(i, 1);
+    showCart();
+}
+
+function checkout() {
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+
+    let total = cart.reduce((sum, p) =>
+        sum + p.price * p.qty, 0);
+
+    let orderId = "ORD" + Math.floor(10000 + Math.random() * 90000);
+
+    document.getElementById("result").innerHTML = `
+        <div class="cart">
+            <h2>✅ Order Placed Successfully!</h2>
+            <p>Order ID: ${orderId}</p>
+            <p>Total Amount: ₹${total}</p>
+            <p>Status: Order Placed</p>
+            <button onclick="window.print()">Print Receipt</button>
+        </div>
+    `;
+
+    cart = [];
+    showCart();
+}
+
+showProducts();
+showCart();
+</script>
+
+</body>
+</html>
