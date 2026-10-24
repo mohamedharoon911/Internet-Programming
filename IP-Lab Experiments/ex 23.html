@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodConnect | Blood Management System</title>
+<style>
+:root{--red:#dc2626;--dark:#171923;--muted:#64748b;--bg:#f6f7fb}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--dark)}
+header{background:linear-gradient(120deg,#991b1b,#ef4444);color:white;padding:24px 6%;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+header h1{margin:0;font-size:25px}
+header p{margin:7px 0 0;color:#fee2e2}
+button{border:0;border-radius:9px;padding:11px 15px;font-weight:bold;cursor:pointer}
+.primary{background:var(--red);color:white}
+.light{background:white;color:#991b1b}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:15px 6%;background:white;box-shadow:0 3px 12px #0000000b}
+nav button{background:#f1f5f9;color:#334155}
+nav button.active{background:#fee2e2;color:#991b1b}
+main{max-width:1200px;margin:auto;padding:25px 5%}
+.hero{background:white;border-radius:20px;padding:25px;display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:center;box-shadow:0 5px 25px #0f172a0c}
+.hero h2{font-size:clamp(25px,4vw,38px);margin:0 0 12px}
+.hero p{color:var(--muted);line-height:1.6}
+.hero img{width:100%;height:220px;object-fit:cover;border-radius:15px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+.stat,.panel{background:white;padding:20px;border-radius:15px;box-shadow:0 5px 20px #0f172a08}
+.stat span{color:var(--muted);font-size:13px}
+.stat h2{margin:9px 0 0;color:var(--red);font-size:28px}
+.panel{margin:16px 0}
+.panel h3{margin-top:0}
+input,select,textarea{width:100%;padding:12px;border:1px solid #dbe1ea;border-radius:9px;margin:6px 0 12px;font:inherit;background:white}
+label{font-size:13px;font-weight:bold;color:#475569}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #e8edf3;font-size:14px}
+th{background:#fff1f2;color:#991b1b}
+.table-wrap{overflow-x:auto}
+.tag{background:#fee2e2;color:#991b1b;padding:5px 9px;border-radius:20px;font-weight:bold}
+.hidden{display:none!important}
+.muted{color:var(--muted);font-size:13px}
+.empty{text-align:center;padding:25px;color:var(--muted)}
+footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
+@media(max-width:750px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}main{padding:18px 4%}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🩸 BloodConnect</h1>
+    <p>Blood Management Information System</p>
+  </div>
+  <button class="light" onclick="showPage('register')">＋ Become a Donor</button>
+</header>
+
+<nav>
+  <button class="active" data-page="home" onclick="showPage('home',this)">Dashboard</button>
+  <button data-page="search" onclick="showPage('search',this)">Find Donors</button>
+  <button data-page="register" onclick="showPage('register',this)">Register Donor</button>
+  <button data-page="donations" onclick="showPage('donations',this)">Donation Records</button>
+  <button data-page="admin" onclick="showPage('admin',this)">Admin</button>
+</nav>
+
+<main>
+<section id="home" class="page">
+  <div class="hero">
+    <div>
+      <span class="tag">Every drop matters</span>
+      <h2>Give blood.<br>Help save lives.</h2>
+      <p>Maintain donor information, search by blood group and location, and monitor donation records in one simple dashboard.</p>
+      <button class="primary" onclick="showPage('search')">Find a Donor →</button>
+      <button onclick="showPage('register')">Register Now</button>
+    </div>
+    <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=1000&q=80" alt="Blood donation">
+  </div>
+  <div class="stats">
+    <div class="stat"><span>Registered Donors</span><h2 id="totalDonors">0</h2></div>
+    <div class="stat"><span>Donation Records</span><h2 id="totalDonations">0</h2></div>
+    <div class="stat"><span>Blood Groups</span><h2 id="bloodGroups">0</h2></div>
+    <div class="stat"><span>Locations Covered</span><h2 id="locations">0</h2></div>
+  </div>
+  <div class="panel">
+    <h3>Blood Group Overview</h3>
+    <div id="bloodOverview" class="grid"></div>
+    <p class="muted">Counts represent registered donors, not verified blood-bank inventory.</p>
+  </div>
+</section>
+
+<section id="search" class="page hidden">
+  <div class="panel">
+    <h2>Find a Blood Donor</h2>
+    <p class="muted">Search the locally stored donor directory by blood group or location.</p>
+    <div class="grid">
+      <div><label>Blood Group</label>
+        <select id="filterGroup" onchange="renderDonors()">
+          <option value="">All blood groups</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+      </div>
+      <div><label>Location</label><input id="filterLocation" placeholder="Enter city or area" oninput="renderDonors()"></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Blood Group</th><th>Location</th><th>Contact</th></tr></thead>
+      <tbody id="donorResults"></tbody>
+    </table></div>
+    <p class="muted">Demo directory only. Verify donor eligibility and availability through authorized services before arranging a donation.</p>
+  </div>
+</section>
+
+<section id="register" class="page hidden">
+  <div class="panel">
+    <h2>Donor Registration</h2>
+    <form id="donorForm">
+      <div class="grid">
+        <div><label>Full Name</label><input name="name" required maxlength="70" placeholder="Enter full name"></div>
+        <div><label>Blood Group</label>
+          <select name="group" required>
+            <option value="">Select group</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div><label>Contact Number</label><input name="phone" required pattern="[0-9+ -]{8,16}" placeholder="Phone number"></div>
+        <div><label>City / Location</label><input name="location" required maxlength="80" placeholder="City or area"></div>
+        <div><label>Age</label><input name="age" type="number" min="18" max="100" required></div>
+        <div><label>Last Donation Date (optional)</label><input name="lastDonation" type="date"></div>
+      </div>
+      <label><input type="checkbox" required style="width:auto"> I confirm these details are accurate and consent to this demo record being stored in this browser.</label>
+      <br><br><button class="primary" type="submit">Save Donor Record</button>
+    </form>
+  </div>
+</section>
+
+<section id="donations" class="page hidden">
+  <div class="panel">
+    <h2>Donation Records</h2>
+    <p class="muted">Record a donation only after confirming it through the relevant blood bank or authorized staff.</p>
+    <form id="donationForm">
+      <div class="grid">
+        <div><label>Donor</label><select id="donorSelect" required></select></div>
+        <div><label>Donation Date</label><input id="donationDate" type="date" required></div>
+      </div>
+      <button class="primary">Add Donation Record</button>
+    </form>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Record ID</th><th>Donor</th><th>Blood Group</th><th>Date</th></tr></thead>
+      <tbody id="donationResults"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="admin" class="page hidden">
+  <div class="panel" id="adminLogin">
+    <h2>Administrator Login</h2>
+    <p class="muted">For classroom demonstration only. Default demo password: <b>admin123</b></p>
+    <label>Password</label><input id="adminPassword" type="password" placeholder="Enter demo password">
+    <button class="primary" onclick="loginAdmin()">Sign In</button>
+    <p id="loginMessage" class="muted"></p>
+  </div>
+  <div id="adminPanel" class="panel hidden">
+    <div class="row"><h2>Admin Dashboard</h2><button onclick="exportCSV()">Export Donors CSV</button></div>
+    <p class="muted">Manage the demo donor directory. Do not enter real sensitive medical or contact information.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Group</th><th>Location</th><th>Action</th></tr></thead>
+      <tbody id="adminResults"></tbody>
+    </table></div>
+    <button onclick="logoutAdmin()">Logout</button>
+  </div>
+</section>
+</main>
+
+<footer>BloodConnect • Internet Programming Lab • Educational demo — not a real blood bank</footer>
+
+<script>
+const KEY = "bloodconnect_donors_v1";
+const DONATIONS_KEY = "bloodconnect_donations_v1";
+const groups = ["A+","A-","B+","B-","AB+","AB-","O+","O-"];
+
+function read(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "[]"); }
+  catch { return []; }
+}
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+let donors = read(KEY);
+let donations = read(DONATIONS_KEY);
+let adminLoggedIn = false;
+
+if (!donors.length) {
+  donors = [
+    {id:"D1001",name:"Arun Kumar",group:"O+",phone:"9000000001",location:"Chennai",age:25,lastDonation:""},
+    {id:"D1002",name:"Priya S",group:"A+",phone:"9000000002",location:"Coimbatore",age:23,lastDonation:""},
+    {id:"D1003",name:"Rahul M",group:"B+",phone:"9000000003",location:"Chennai",age:28,lastDonation:""},
+    {id:"D1004",name:"Meena R",group:"AB+",phone:"9000000004",location:"Madurai",age:24,lastDonation:""}
+  ];
+  save(KEY, donors);
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function showPage(id, button) {
+  document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  const navButton = button || document.querySelector('nav button[data-page="'+id+'"]');
+  if (navButton) navButton.classList.add("active");
+  refresh();
+}
+
+document.getElementById("donorForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const donor = {
+    id:"D" + Date.now().toString().slice(-8),
+    name:f.get("name").trim(),
+    group:f.get("group"),
+    phone:f.get("phone").trim(),
+    location:f.get("location").trim(),
+    age:Number(f.get("age")),
+    lastDonation:f.get("lastDonation") || ""
+  };
+  if (!donor.name || !donor.location || !donor.group) return;
+  donors.push(donor);
+  save(KEY, donors);
+  e.target.reset();
+  alert("Donor record saved! Reference ID: " + donor.id);
+  refresh();
+  showPage("search");
+});
+
+function renderDonors() {
+  const group = document.getElementById("filterGroup").value;
+  const location = document.getElementById("filterLocation").value.trim().toLowerCase();
+  const found = donors.filter(d =>
+    (!group || d.group === group) &&
+    (!location || d.location.toLowerCase().includes(location))
+  );
+  document.getElementById("donorResults").innerHTML = found.length
+    ? found.map(d => `<tr><td>${escapeHTML(d.name)}</td><td><span class="tag">${escapeHTML(d.group)}</span></td><td>${escapeHTML(d.location)}</td><td>${escapeHTML(d.phone)}</td></tr>`).join("")
+    : '<tr><td colspan="4" class="empty">No matching donors found.</td></tr>';
+}
+
+function renderOverview() {
+  document.getElementById("bloodOverview").innerHTML = groups.map(g => {
+    const count = donors.filter(d => d.group === g).length;
+    return `<div class="stat"><span>${g} Donors</span><h2>${count}</h2></div>`;
+  }).join("");
+}
+
+function renderDonations() {
+  document.getElementById("donorSelect").innerHTML = donors.length
+    ? donors.map(d => `<option value="${escapeHTML(d.id)}">${escapeHTML(d.name)} (${escapeHTML(d.group)})</option>`).join("")
+    : '<option value="">Register a donor first</option>';
+
+  document.getElementById("donationResults").innerHTML = donations.length
+    ? donations.slice().reverse().map(x => {
+      const d = donors.find(y => y.id === x.donorId);
+      return `<tr><td>${escapeHTML(x.id)}</td><td>${escapeHTML(d ? d.name : "Removed donor")}</td><td>${escapeHTML(d ? d.group : "—")}</td><td>${escapeHTML(x.date)}</td></tr>`;
+    }).join("")
+    : '<tr><td colspan="4" class="empty">No donation records yet.</td></tr>';
+}
+
+document.getElementById("donationForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const donorId = document.getElementById("donorSelect").value;
+  const date = document.getElementById("donationDate").value;
+  if (!donors.some(d => d.id === donorId) || !date) {
+    alert("Please register/select a donor and choose a date.");
+    return;
+  }
+  donations.push({id:"BR" + Date.now().toString().slice(-7), donorId, date});
+  save(DONATIONS_KEY, donations);
+  e.target.reset();
+  refresh();
+  alert("Donation record added.");
+});
+
+function loginAdmin() {
+  if (document.getElementById("adminPassword").value === "admin123") {
+    adminLoggedIn = true;
+    document.getElementById("adminLogin").classList.add("hidden");
+    document.getElementById("adminPanel").classList.remove("hidden");
+    renderAdmin();
+  } else {
+    document.getElementById("loginMessage").textContent = "Incorrect password.";
+  }
+}
+
+function logoutAdmin() {
+  adminLoggedIn = false;
+  document.getElementById("adminLogin").classList.remove("hidden");
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("adminPassword").value = "";
+}
+
+function renderAdmin() {
+  if (!adminLoggedIn) return;
+  document.getElementById("adminResults").innerHTML = donors.map(d =>
+    `<tr><td>${escapeHTML(d.name)}</td><td>${escapeHTML(d.group)}</td><td>${escapeHTML(d.location)}</td><td><button onclick="deleteDonor('${escapeHTML(d.id)}')">Delete</button></td></tr>`
+  ).join("") || '<tr><td colspan="4">No donor records.</td></tr>';
+}
+
+function deleteDonor(id) {
+  if (!adminLoggedIn || !confirm("Delete this donor record?")) return;
+  donors = donors.filter(d => d.id !== id);
+  save(KEY, donors);
+  refresh();
+}
+
+function exportCSV() {
+  if (!adminLoggedIn) return;
+  const rows = [["ID","Name","Blood Group","Phone","Location","Age"],
+    ...donors.map(d => [d.id,d.name,d.group,d.phone,d.location,d.age])];
+  const csv = rows.map(row => row.map(v =>
+    '"' + String(v ?? "").replace(/"/g,'""') + '"'
+  ).join(",")).join("\r\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "bloodconnect-donors.csv"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function refresh() {
+  donors = read(KEY);
+  donations = read(DONATIONS_KEY);
+  document.getElementById("totalDonors").textContent = donors.length;
+  document.getElementById("totalDonations").textContent = donations.length;
+  document.getElementById("bloodGroups").textContent = new Set(donors.map(d => d.group)).size;
+  document.getElementById("locations").textContent = new Set(donors.map(d => d.location.toLowerCase())).size;
+  renderOverview();
+  renderDonors();
+  renderDonations();
+  renderAdmin();
+}
+
+window.addEventListener("storage", refresh);
+refresh();
+</script>
+</body>
+</html>

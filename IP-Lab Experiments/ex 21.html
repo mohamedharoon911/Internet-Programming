@@ -1,0 +1,442 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JobConnect | Career Portal</title>
+<style>
+:root{--navy:#172554;--blue:#3857e8;--light:#f4f6fc;--text:#202b43;
+--muted:#718096;--white:#fff;--green:#16845b;--border:#e4e8f1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--light);color:var(--text);font:14px Arial,sans-serif}
+header{background:white;padding:16px 5%;display:flex;align-items:center;
+justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.logo{font-size:23px;font-weight:bold;color:var(--navy)}
+.logo span{color:var(--blue)}
+nav{display:flex;gap:7px;flex-wrap:wrap}
+button{cursor:pointer;border:0;border-radius:8px;background:var(--blue);
+color:white;padding:10px 14px;font-weight:bold}
+button:hover{filter:brightness(.93)}
+button.light{background:#edf0ff;color:var(--navy)}
+button.danger{background:#d83d52}
+button.green{background:var(--green)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.container{max-width:1250px;margin:auto;padding:22px}
+.hero{padding:34px;border-radius:18px;color:white;
+background:linear-gradient(100deg,#172554f5,#3857e8d9),
+url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1500&q=85') center/cover;
+display:grid;grid-template-columns:1.4fr .6fr;gap:20px;align-items:center}
+.hero h1{font-size:clamp(30px,4vw,48px);margin:10px 0}
+.hero p{line-height:1.7;color:#e0e7ff;max-width:570px}
+.hero-art{font-size:85px;text-align:center}
+.pill{display:inline-block;padding:6px 10px;border-radius:30px;
+background:#e7eaff;color:#3049be;font-size:11px;font-weight:bold}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:20px 0}
+.stat,.panel,.job{background:white;border:1px solid var(--border);
+border-radius:13px;padding:17px}
+.stat .num{font-size:29px;font-weight:bold;margin:10px 0}
+.muted{font-size:12px;color:var(--muted)}
+h2{font-size:21px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.tabs button.active{background:var(--navy)}
+.page{display:none}.page.active{display:block}
+.filters,.formgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+input,select,textarea{width:100%;padding:11px;margin:5px 0 12px;
+border:1px solid #d9dfed;border-radius:8px;font:inherit;background:white}
+label{font-size:12px;font-weight:bold}
+.jobs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.job{padding:0;overflow:hidden}
+.job img{width:100%;height:150px;object-fit:cover;background:#e6eaff}
+.jobbody{padding:16px}
+.job h3{margin:10px 0 6px;font-size:17px}
+.job p{line-height:1.5}
+.jobfoot{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.jobfoot button{flex:1}
+.salary{font-size:17px;color:var(--green);font-weight:bold}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+th{color:var(--muted);font-size:11px;text-transform:uppercase}
+.tablewrap{overflow-x:auto}
+.status{display:inline-block;padding:5px 8px;border-radius:7px;
+background:#e4f7ed;color:#17734e;font-size:11px}
+.status.pending{background:#fff0d3;color:#9a6600}
+.status.rejected{background:#ffe4e8;color:#b52d44}
+.hidden{display:none!important}
+.notice{padding:12px;background:#edf2ff;border-radius:8px;margin:10px 0}
+.empty{padding:30px;text-align:center;color:var(--muted);background:white;border-radius:12px}
+footer{text-align:center;background:var(--navy);color:#dce4ff;padding:23px}
+#toast{display:none;position:fixed;bottom:20px;right:20px;z-index:99;
+padding:14px 18px;background:#172554;color:white;border-radius:10px;max-width:340px}
+@media(max-width:900px){.jobs{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.container{padding:12px}.jobs{grid-template-columns:1fr}
+.hero{grid-template-columns:1fr;padding:23px}.hero-art{display:none}
+.formgrid,.filters{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:12px}
+header{padding:14px}.stat .num{font-size:24px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Job<span>Connect</span> ✦</div>
+  <nav>
+    <button class="light" onclick="go('jobs')">Find Jobs</button>
+    <button class="light" onclick="go('applications')">My Applications</button>
+    <button class="light" onclick="go('director')">Director</button>
+    <button class="light" onclick="go('admin')">Admin</button>
+  </nav>
+</header>
+
+<main class="container">
+<section class="hero">
+ <div>
+  <span class="pill">YOUR NEXT OPPORTUNITY STARTS HERE</span>
+  <h1>Find work that<br>moves you forward.</h1>
+  <p>Discover opportunities, save your favourite vacancies, apply online,
+  and track every application from one career dashboard.</p>
+  <button onclick="go('jobs')">Explore vacancies →</button>
+ </div>
+ <div class="hero-art">💼</div>
+</section>
+
+<div class="stats">
+ <div class="stat"><div class="muted">ACTIVE VACANCIES</div><div class="num" id="jobCount">0</div><span class="pill">Explore roles</span></div>
+ <div class="stat"><div class="muted">APPLICATIONS</div><div class="num" id="appCount">0</div><span class="pill">Your activity</span></div>
+ <div class="stat"><div class="muted">APPROVED DIRECTORS</div><div class="num" id="directorCount">0</div><span class="pill">Verified demo</span></div>
+ <div class="stat"><div class="muted">SAVED JOBS</div><div class="num" id="savedCount">0</div><span class="pill">Your shortlist</span></div>
+</div>
+
+<div class="tabs">
+ <button class="active" data-page="jobs" onclick="go('jobs')">Browse Jobs</button>
+ <button data-page="applications" onclick="go('applications')">My Applications</button>
+ <button data-page="saved" onclick="go('saved')">Saved Jobs</button>
+ <button data-page="director" onclick="go('director')">Director Portal</button>
+ <button data-page="admin" onclick="go('admin')">Admin Dashboard</button>
+</div>
+
+<!-- JOB SEARCH -->
+<section id="jobs" class="page active">
+ <div class="panel">
+  <div class="row"><div><h2>Explore opportunities</h2><p class="muted">Find the role that matches your goals.</p></div>
+  <span class="pill" id="searchResultCount">Loading jobs...</span></div>
+  <div class="filters">
+   <div><label>Search role/company</label><input id="q" placeholder="Software Developer" oninput="renderJobs()"></div>
+   <div><label>Location</label><select id="loc" onchange="renderJobs()">
+    <option value="">All locations</option><option>Chennai</option><option>Bengaluru</option>
+    <option>Hyderabad</option><option>Coimbatore</option><option>Remote</option>
+   </select></div>
+   <div><label>Category</label><select id="cat" onchange="renderJobs()">
+    <option value="">All categories</option><option>IT</option><option>Design</option>
+    <option>Marketing</option><option>Finance</option><option>Data</option><option>HR</option>
+   </select></div>
+   <div><label>Employment type</label><select id="kind" onchange="renderJobs()">
+    <option value="">All types</option><option>Full-time</option><option>Part-time</option>
+    <option>Internship</option><option>Remote</option>
+   </select></div>
+  </div>
+ </div>
+ <div class="jobs" id="jobGrid"></div>
+</section>
+
+<!-- APPLICATIONS -->
+<section id="applications" class="page">
+ <div class="panel">
+  <h2>My Applications</h2>
+  <p class="muted">Enter the email used when applying to retrieve application records.</p>
+  <label>Applicant email</label><input id="appEmail" type="email" placeholder="you@example.com">
+  <button onclick="renderApplications()">View Applications</button>
+  <div id="applicationList" style="margin-top:18px"></div>
+ </div>
+</section>
+
+<!-- SAVED JOBS -->
+<section id="saved" class="page">
+ <div class="panel"><h2>Saved Jobs</h2><p class="muted">Your bookmarked opportunities.</p>
+ <div class="jobs" id="savedGrid"></div></div>
+</section>
+
+<!-- DIRECTOR -->
+<section id="director" class="page">
+ <div class="panel">
+  <h2>🏢 Director Portal</h2>
+  <p class="muted">Register your company and wait for administrator approval before publishing vacancies.</p>
+  <h3>Director Registration</h3>
+  <form id="directorForm">
+   <div class="formgrid">
+    <div><label>Director name</label><input id="dname" required></div>
+    <div><label>Company name</label><input id="company" required></div>
+    <div><label>Email</label><input id="demail" type="email" required></div>
+    <div><label>Contact number</label><input id="dphone" required></div>
+   </div>
+   <button type="submit">Submit Registration</button>
+  </form>
+  <div class="notice">Demo workflow: an administrator approves the director before vacancy posting is enabled.</div>
+ </div>
+ <div class="panel">
+  <h2>Director Sign-in</h2>
+  <label>Registered director email</label><input id="directorLoginEmail" type="email">
+  <button onclick="directorLogin()">Continue to Director Workspace</button>
+ </div>
+ <div id="directorWorkspace" class="hidden">
+  <div class="panel">
+   <h2>Post a Vacancy</h2>
+   <form id="jobForm">
+    <div class="formgrid">
+     <div><label>Job title</label><input id="jtitle" required></div>
+     <div><label>Category</label><select id="jcat"><option>IT</option><option>Design</option><option>Marketing</option><option>Finance</option><option>Data</option><option>HR</option></select></div>
+     <div><label>Location</label><select id="jloc"><option>Chennai</option><option>Bengaluru</option><option>Hyderabad</option><option>Coimbatore</option><option>Remote</option></select></div>
+     <div><label>Employment type</label><select id="jkind"><option>Full-time</option><option>Part-time</option><option>Internship</option><option>Remote</option></select></div>
+     <div><label>Annual salary / stipend</label><input id="jsalary" required placeholder="₹4–7 LPA"></div>
+     <div><label>Contact email</label><input id="jcontact" type="email" required></div>
+    </div>
+    <label>Job description</label><textarea id="jdesc" rows="3" required></textarea>
+    <button type="submit">Publish Vacancy</button>
+   </form>
+  </div>
+  <div class="panel"><h2>My Vacancies & Applicants</h2><div id="directorJobs"></div></div>
+ </div>
+</section>
+
+<!-- ADMIN -->
+<section id="admin" class="page">
+ <div class="panel">
+  <h2>🔐 Administrator Dashboard</h2>
+  <p class="muted">Demo password: <b>admin123</b>. This is not secure authentication.</p>
+  <label>Admin password</label><input type="password" id="adminPass">
+  <button onclick="adminLogin()">Unlock Admin</button>
+ </div>
+ <div id="adminWorkspace" class="hidden">
+  <div class="panel"><h2>Director Approval Queue</h2><div id="directorTable"></div></div>
+  <div class="panel"><h2>Vacancy Management</h2><div id="adminJobs"></div></div>
+  <div class="panel"><h2>Registered Users / Applications</h2><div id="adminApps"></div>
+   <button onclick="exportCSV()">Export Recruitment Report CSV</button>
+  </div>
+ </div>
+</section>
+</main>
+
+<footer>JobConnect • Online Job Vacancy and Recruitment System</footer>
+<div id="toast"></div>
+
+<script>
+const seedJobs=[
+{id:101,title:"Frontend Developer",company:"PixelWorks",location:"Chennai",category:"IT",type:"Full-time",salary:"₹5–8 LPA",contact:"careers@pixelworks.example",desc:"Build responsive web interfaces and collaborate with product designers.",image:"photo-1498050108023-c5249f4df085",status:"Approved",director:"demo@pixelworks.example"},
+{id:102,title:"Data Analyst Intern",company:"Insight Labs",location:"Bengaluru",category:"Data",type:"Internship",salary:"₹20,000/month",contact:"jobs@insight.example",desc:"Analyze business data, build reports and uncover useful trends.",image:"photo-1551288049-bebda4e38f71",status:"Approved",director:"demo@insight.example"},
+{id:103,title:"UI/UX Designer",company:"CreativeNest",location:"Remote",category:"Design",type:"Remote",salary:"₹4–6 LPA",contact:"hello@creative.example",desc:"Create intuitive interfaces, prototypes and accessible user experiences.",image:"photo-1559028012-481c04fa702d",status:"Approved",director:"demo@creative.example"},
+{id:104,title:"Java Developer",company:"CodeBridge",location:"Hyderabad",category:"IT",type:"Full-time",salary:"₹6–10 LPA",contact:"hiring@codebridge.example",desc:"Develop Java applications, test components and maintain services.",image:"photo-1519389950473-47ba0277781c",status:"Approved",director:"demo@codebridge.example"},
+{id:105,title:"Digital Marketing Intern",company:"BrightReach",location:"Coimbatore",category:"Marketing",type:"Internship",salary:"₹12,000/month",contact:"talent@brightreach.example",desc:"Assist with campaigns, content planning and marketing analytics.",image:"photo-1460925895917-afdab827c52f",status:"Approved",director:"demo@brightreach.example"},
+{id:106,title:"Finance Associate",company:"Northstar Finance",location:"Chennai",category:"Finance",type:"Full-time",salary:"₹4–6 LPA",contact:"jobs@northstar.example",desc:"Support financial reporting, account reconciliation and analysis.",image:"photo-1460925895917-afdab827c52f",status:"Approved",director:"demo@northstar.example"}
+];
+function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch(e){return fallback}}
+let jobs=read("jc_jobs",seedJobs);
+let directors=read("jc_directors",[]);
+let applications=read("jc_apps",[]);
+let saved=read("jc_saved",[]);
+let currentDirector="";
+let adminUnlocked=false;
+
+function persist(){
+ localStorage.setItem("jc_jobs",JSON.stringify(jobs));
+ localStorage.setItem("jc_directors",JSON.stringify(directors));
+ localStorage.setItem("jc_apps",JSON.stringify(applications));
+ localStorage.setItem("jc_saved",JSON.stringify(saved));
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(s){
+ const el=document.getElementById("toast");el.textContent=s;el.style.display="block";
+ clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.style.display="none",3000);
+}
+function go(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+ if(id==="jobs")renderJobs();
+ if(id==="saved")renderSaved();
+ if(id==="admin"&&adminUnlocked)renderAdmin();
+ if(id==="director"&&currentDirector)renderDirectorJobs();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function updateStats(){
+ document.getElementById("jobCount").textContent=jobs.filter(j=>j.status==="Approved").length;
+ document.getElementById("appCount").textContent=applications.length;
+ document.getElementById("directorCount").textContent=directors.filter(d=>d.status==="Approved").length;
+ document.getElementById("savedCount").textContent=saved.length;
+}
+function imageUrl(id){
+ return "https://images.unsplash.com/"+id+"?auto=format&fit=crop&w=750&q=80";
+}
+function jobCard(j){
+ const isSaved=saved.includes(j.id);
+ return `<article class="job">
+ <img src="${imageUrl(j.image)}" alt="${esc(j.title)} workplace image" loading="lazy"
+ onerror="this.src='https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=750&q=80'">
+ <div class="jobbody"><span class="pill">${esc(j.category)}</span>
+ <h3>${esc(j.title)}</h3><b>${esc(j.company)}</b>
+ <p class="muted">📍 ${esc(j.location)} · ${esc(j.type)}</p>
+ <p class="salary">${esc(j.salary)}</p><p>${esc(j.desc)}</p>
+ <div class="jobfoot">
+ <button onclick="applyJob(${j.id})">Apply Now</button>
+ <button class="light" onclick="toggleSave(${j.id})">${isSaved?"★ Saved":"☆ Save"}</button>
+ </div></div></article>`;
+}
+function renderJobs(){
+ const q=document.getElementById("q").value.toLowerCase();
+ const loc=document.getElementById("loc").value,cat=document.getElementById("cat").value;
+ const kind=document.getElementById("kind").value;
+ const list=jobs.filter(j=>j.status==="Approved"&&
+ (j.title+" "+j.company+" "+j.desc).toLowerCase().includes(q)&&
+ (!loc||j.location===loc)&&(!cat||j.category===cat)&&(!kind||j.type===kind));
+ document.getElementById("searchResultCount").textContent=list.length+" vacancies";
+ document.getElementById("jobGrid").innerHTML=list.length?list.map(jobCard).join(""):'<div class="empty">No matching vacancies. Try changing your filters.</div>';
+}
+function toggleSave(id){
+ saved=saved.includes(id)?saved.filter(x=>x!==id):[...saved,id];
+ persist();updateStats();renderJobs();renderSaved();
+ toast(saved.includes(id)?"Job added to saved list.":"Job removed from saved list.");
+}
+function renderSaved(){
+ const list=jobs.filter(j=>saved.includes(j.id)&&j.status==="Approved");
+ document.getElementById("savedGrid").innerHTML=list.length?list.map(jobCard).join(""):'<div class="empty">No saved jobs yet. Browse vacancies and press Save.</div>';
+}
+function applyJob(id){
+ const j=jobs.find(x=>x.id===id);if(!j)return;
+ const email=prompt("Enter your email to apply:");
+ if(!email||!email.includes("@")){toast("A valid email is required.");return}
+ const existing=applications.find(a=>a.jobId===id&&a.email.toLowerCase()===email.trim().toLowerCase());
+ if(existing){toast("You have already applied for this job.");return}
+ const name=prompt("Enter your full name:");
+ if(!name||!name.trim()){toast("Applicant name is required.");return}
+ const app={id:"APP-"+Date.now().toString().slice(-8),jobId:id,
+ title:j.title,company:j.company,email:email.trim().toLowerCase(),
+ name:name.trim(),status:"Submitted",date:new Date().toLocaleString()};
+ applications.unshift(app);persist();updateStats();
+ toast("Application submitted! ID: "+app.id);
+}
+function renderApplications(){
+ const email=document.getElementById("appEmail").value.trim().toLowerCase();
+ const list=applications.filter(a=>a.email===email&&email);
+ document.getElementById("applicationList").innerHTML=list.length?list.map(a=>`
+ <div class="panel" style="margin-top:10px"><div class="row"><div>
+ <h3>${esc(a.title)}</h3><p>${esc(a.company)}</p><p class="muted">Application ID: ${esc(a.id)}</p>
+ <p class="muted">Submitted: ${esc(a.date)}</p></div>
+ <span class="status ${a.status==="Rejected"?"rejected":a.status==="Submitted"?"pending":""}">${esc(a.status)}</span></div></div>`).join(""):'<div class="empty">No applications found for this email.</div>';
+}
+document.getElementById("directorForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const email=document.getElementById("demail").value.trim().toLowerCase();
+ if(directors.some(d=>d.email===email)){toast("This director email is already registered.");return}
+ directors.push({name:document.getElementById("dname").value.trim(),
+ company:document.getElementById("company").value.trim(),email,
+ phone:document.getElementById("dphone").value.trim(),status:"Pending"});
+ persist();updateStats();e.target.reset();
+ toast("Registration submitted. Wait for admin approval.");
+ if(adminUnlocked)renderAdmin();
+});
+function directorLogin(){
+ const email=document.getElementById("directorLoginEmail").value.trim().toLowerCase();
+ const d=directors.find(x=>x.email===email);
+ if(!d){toast("Director not found. Register first.");return}
+ if(d.status!=="Approved"){toast("Director approval status: "+d.status);return}
+ currentDirector=email;document.getElementById("directorWorkspace").classList.remove("hidden");
+ renderDirectorJobs();toast("Welcome, "+d.name+".");
+}
+document.getElementById("jobForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ if(!currentDirector){toast("Sign in as an approved director first.");return}
+ const d=directors.find(x=>x.email===currentDirector);
+ if(!d||d.status!=="Approved"){toast("Director approval required.");return}
+ jobs.unshift({id:Date.now(),title:document.getElementById("jtitle").value.trim(),
+ company:d.company,location:document.getElementById("jloc").value,
+ category:document.getElementById("jcat").value,type:document.getElementById("jkind").value,
+ salary:document.getElementById("jsalary").value.trim(),
+ contact:document.getElementById("jcontact").value.trim(),
+ desc:document.getElementById("jdesc").value.trim(),
+ image:"photo-1521737711867-e3b97375f902",status:"Approved",director:currentDirector});
+ persist();e.target.reset();updateStats();renderJobs();renderDirectorJobs();
+ if(adminUnlocked)renderAdmin();toast("Vacancy published.");
+});
+function renderDirectorJobs(){
+ if(!currentDirector)return;
+ const mine=jobs.filter(j=>j.director===currentDirector);
+ document.getElementById("directorJobs").innerHTML=mine.length?mine.map(j=>{
+ const apps=applications.filter(a=>a.jobId===j.id);
+ return `<div class="panel" style="margin:10px 0"><h3>${esc(j.title)} — ${esc(j.company)}</h3>
+ <p class="muted">${esc(j.location)} · ${esc(j.category)} · ${esc(j.salary)}</p>
+ <p><b>${apps.length}</b> applicant(s)</p>
+ ${apps.length?`<div class="tablewrap"><table><tr><th>Applicant</th><th>Email</th><th>Status</th><th>Update</th></tr>
+ ${apps.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.email)}</td><td>${esc(a.status)}</td>
+ <td><select id="app-${a.id}">${["Submitted","Under Review","Shortlisted","Selected","Rejected"].map(s=>`<option ${a.status===s?"selected":""}>${s}</option>`).join("")}</select>
+ <button onclick="updateApplication('${a.id}')">Save</button></td></tr>`).join("")}</table></div>`:"<p class='muted'>No applicants yet.</p>"}
+ </div>`;
+ }).join(""):'<div class="empty">You have not posted any vacancies yet.</div>';
+}
+function updateApplication(id){
+ const a=applications.find(x=>x.id===id);if(!a)return;
+ const j=jobs.find(x=>x.id===a.jobId);
+ if(!j||j.director!==currentDirector){toast("You can only manage your own applicants.");return}
+ a.status=document.getElementById("app-"+id).value;persist();
+ renderDirectorJobs();if(adminUnlocked)renderAdmin();toast("Application status updated.");
+}
+function adminLogin(){
+ if(document.getElementById("adminPass").value==="admin123"){
+ adminUnlocked=true;document.getElementById("adminWorkspace").classList.remove("hidden");
+ renderAdmin();toast("Admin dashboard unlocked.");
+ }else toast("Incorrect admin password.");
+}
+function renderAdmin(){
+ if(!adminUnlocked)return;
+ document.getElementById("directorTable").innerHTML=directors.length?
+ `<div class="tablewrap"><table><tr><th>Director</th><th>Company</th><th>Email</th><th>Status</th><th>Action</th></tr>
+ ${directors.map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.company)}</td><td>${esc(d.email)}</td>
+ <td>${esc(d.status)}</td><td><select id="dir-${safeId(d.email)}">
+ ${["Pending","Approved","Rejected"].map(s=>`<option ${d.status===s?"selected":""}>${s}</option>`).join("")}
+ </select><button onclick="updateDirector('${encodeURIComponent(d.email)}')">Save</button></td></tr>`).join("")}</table></div>`
+ :'<div class="empty">No director registrations yet.</div>';
+ document.getElementById("adminJobs").innerHTML=`<div class="tablewrap"><table>
+ <tr><th>Vacancy</th><th>Company</th><th>Location</th><th>Applicants</th><th>Action</th></tr>
+ ${jobs.map(j=>`<tr><td>${esc(j.title)}</td><td>${esc(j.company)}</td><td>${esc(j.location)}</td>
+ <td>${applications.filter(a=>a.jobId===j.id).length}</td><td><button class="danger" onclick="deleteJob(${j.id})">Delete</button></td></tr>`).join("")}</table></div>`;
+ document.getElementById("adminApps").innerHTML=applications.length?
+ `<div class="tablewrap"><table><tr><th>Applicant</th><th>Email</th><th>Job</th><th>Status</th></tr>
+ ${applications.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.email)}</td><td>${esc(a.title)}</td><td>${esc(a.status)}</td></tr>`).join("")}</table></div>`
+ :'<div class="empty">No applications have been submitted.</div>';
+}
+function safeId(s){return Array.from(s).map(c=>c.charCodeAt(0).toString(16)).join("")}
+function updateDirector(encoded){
+ const email=decodeURIComponent(encoded),d=directors.find(x=>x.email===email);
+ if(!d)return;
+ d.status=document.getElementById("dir-"+safeId(email)).value;persist();updateStats();
+ renderAdmin();renderJobs();toast("Director status updated: "+d.status);
+}
+function deleteJob(id){
+ if(!confirm("Delete this vacancy and its applications?"))return;
+ jobs=jobs.filter(j=>j.id!==id);applications=applications.filter(a=>a.jobId!==id);
+ saved=saved.filter(x=>x!==id);persist();updateStats();renderAdmin();renderJobs();renderSaved();
+ toast("Vacancy and related applications deleted.");
+}
+function exportCSV(){
+ if(!adminUnlocked)return;
+ const rows=[["Application ID","Applicant","Email","Job","Company","Status","Date"],
+ ...applications.map(a=>[a.id,a.name,a.email,a.title,a.company,a.status,a.date])];
+ const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+ const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+ const a=document.createElement("a");a.href=url;a.download="jobconnect-report.csv";a.click();URL.revokeObjectURL(url);
+}
+document.getElementById("appEmail").addEventListener("keydown",e=>{if(e.key==="Enter")renderApplications()});
+function refreshStats(){updateStats();if(adminUnlocked)renderAdmin()}
+renderJobs();renderSaved();updateStats();
+/* Refresh visible counts across tabs; stored changes remain available after reload. */
+setInterval(refreshStats,5000);
+window.addEventListener("storage",e=>{
+ if(["jc_jobs","jc_directors","jc_apps","jc_saved"].includes(e.key)){
+  jobs=read("jc_jobs",seedJobs);directors=read("jc_directors",[]);
+  applications=read("jc_apps",[]);saved=read("jc_saved",[]);
+  refreshStats();renderJobs();renderSaved();
+ }
+});
+</script>
+</body>
+</html>

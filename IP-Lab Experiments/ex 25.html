@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoadRescue | Vehicle Breakdown Assistance</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--blue:#2563eb;--dark:#14213d;--muted:#64748b;--bg:#f4f7fc}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--dark)}
+header{padding:20px 6%;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 3px 15px #0000000b}
+.logo{font-size:23px;font-weight:800;color:var(--blue)}
+nav{display:flex;gap:7px;flex-wrap:wrap}
+button{border:0;padding:11px 14px;border-radius:9px;font-weight:bold;cursor:pointer}
+nav button{background:#edf2fa;color:#334155}
+nav button.active,.primary{background:var(--blue);color:white}
+main{max-width:1200px;margin:auto;padding:25px 5%}
+.hero{padding:38px;border-radius:22px;color:white;background:linear-gradient(90deg,#0f1c38ed,#0f1c3835),url('https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=1500&q=85') center/cover}
+.hero h1{font-size:clamp(30px,5vw,48px);max-width:620px;margin:0 0 12px}
+.hero p{max-width:580px;line-height:1.7}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}
+.stat,.panel,.mechanic{background:white;border-radius:15px;padding:20px;box-shadow:0 5px 20px #14213d0b}
+.stat span{font-size:13px;color:var(--muted)}
+.stat h2{color:var(--blue);margin:8px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{margin-bottom:12px}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #dbe2ed;border-radius:9px;font:inherit;background:white}
+textarea{min-height:85px;resize:vertical}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.mechanic h3{margin:8px 0}
+.tag{display:inline-block;background:#e8f1ff;color:#1d4ed8;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:bold}
+.muted{color:var(--muted);font-size:14px;line-height:1.5}
+.hidden{display:none!important}
+#map{height:340px;border-radius:14px;margin-top:14px;z-index:1}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:570px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #e5eaf2}
+th{background:#eff4ff}
+footer{text-align:center;padding:24px;color:var(--muted)}
+@media(max-width:800px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:25px}}
+@media(max-width:550px){.cards,.grid,.stats{grid-template-columns:1fr}main{padding:18px 4%}}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">🚗 RoadRescue</div>
+ <nav>
+  <button class="active" data-page="home" onclick="showPage('home',this)">Home</button>
+  <button data-page="search" onclick="showPage('search',this)">Find Mechanic</button>
+  <button data-page="register" onclick="showPage('register',this)">Mechanic Registration</button>
+  <button data-page="feedback" onclick="showPage('feedback',this)">Feedback</button>
+  <button data-page="admin" onclick="showPage('admin',this)">Admin</button>
+ </nav>
+</header>
+
+<main>
+<section id="home" class="page">
+ <div class="hero">
+  <span class="tag">ROAD ASSISTANCE DEMO</span>
+  <h1>Vehicle trouble? Find help nearby.</h1>
+  <p>Search mechanic listings, explore their locations, and find contact information when you need vehicle assistance.</p>
+  <button class="primary" onclick="showPage('search')">Find a Mechanic →</button>
+ </div>
+ <div class="stats">
+  <div class="stat"><span>Approved Mechanics</span><h2 id="totalApproved">0</h2></div>
+  <div class="stat"><span>Service Areas</span><h2 id="totalAreas">0</h2></div>
+  <div class="stat"><span>Customer Feedback</span><h2 id="totalFeedback">0</h2></div>
+ </div>
+ <div class="panel">
+  <h2>How RoadRescue Works</h2>
+  <div class="grid">
+   <div><h3>🔎 Search</h3><p class="muted">Filter approved mechanic listings by location and service.</p></div>
+   <div><h3>📍 View Location</h3><p class="muted">View available demo locations on the interactive map.</p></div>
+   <div><h3>🛠️ Register</h3><p class="muted">Mechanics submit business details for administrator approval.</p></div>
+   <div><h3>⭐ Feedback</h3><p class="muted">Submit feedback for a listed mechanic.</p></div>
+  </div>
+ </div>
+</section>
+
+<section id="search" class="page hidden">
+ <h2>Find a Mechanic</h2>
+ <div class="panel">
+  <div class="grid">
+   <div class="field"><label>Search location</label><input id="locationFilter" placeholder="e.g. Chennai" oninput="renderMechanics()"></div>
+   <div class="field"><label>Service type</label>
+    <select id="serviceFilter" onchange="renderMechanics()">
+     <option value="">All services</option><option>Car Repair</option><option>Bike Repair</option>
+     <option>Tyre Puncture</option><option>Battery Jumpstart</option><option>Towing</option>
+    </select>
+   </div>
+  </div>
+  <p class="muted">Only administrator-approved listings appear here.</p>
+ </div>
+ <div id="mechanicCards" class="cards"></div>
+ <div class="panel"><h3>Mechanic Locations</h3><p class="muted">Map markers show demo business coordinates, not verified live availability.</p><div id="map"></div></div>
+</section>
+
+<section id="register" class="page hidden">
+ <div class="panel">
+  <h2>Mechanic Business Registration</h2>
+  <p class="muted">New registrations remain pending until the administrator approves them.</p>
+  <form id="mechanicForm">
+   <div class="grid">
+    <div class="field"><label>Mechanic / Business Name</label><input name="name" required maxlength="80"></div>
+    <div class="field"><label>Contact Number</label><input name="phone" required pattern="[0-9+ -]{8,16}"></div>
+    <div class="field"><label>City / Area</label><input name="location" required maxlength="80"></div>
+    <div class="field"><label>Service Type</label>
+     <select name="service" required>
+      <option>Car Repair</option><option>Bike Repair</option><option>Tyre Puncture</option>
+      <option>Battery Jumpstart</option><option>Towing</option>
+     </select>
+    </div>
+    <div class="field"><label>Business Address</label><input name="address" required maxlength="150"></div>
+    <div class="field"><label>Latitude (optional)</label><input name="lat" type="number" step="any" min="-90" max="90" placeholder="13.0827"></div>
+    <div class="field"><label>Longitude (optional)</label><input name="lng" type="number" step="any" min="-180" max="180" placeholder="80.2707"></div>
+    <div class="field"><label>License / Registration Reference</label><input name="license" required maxlength="60"></div>
+   </div>
+   <button class="primary">Submit for Approval</button>
+  </form>
+ </div>
+ <div class="panel"><h3>My Business Listings</h3><p class="muted">Enter the registered contact number to view matching listing status.</p><input id="businessPhone" placeholder="Registered phone number" oninput="renderMyBusiness()"><div id="myBusiness"></div></div>
+</section>
+
+<section id="feedback" class="page hidden">
+ <div class="panel">
+  <h2>Customer Feedback</h2>
+  <form id="feedbackForm">
+   <div class="field"><label>Approved Mechanic</label><select id="feedbackMechanic" required></select></div>
+   <div class="field"><label>Rating</label><select id="rating"><option value="5">★★★★★ — Excellent</option><option value="4">★★★★ — Very good</option><option value="3">★★★ — Good</option><option value="2">★★ — Fair</option><option value="1">★ — Poor</option></select></div>
+   <div class="field"><label>Your Feedback</label><textarea id="feedbackText" required maxlength="500" placeholder="Describe your experience"></textarea></div>
+   <button class="primary">Submit Feedback</button>
+  </form>
+ </div>
+ <div class="panel"><h3>Recent Feedback</h3><div id="feedbackList"></div></div>
+</section>
+
+<section id="admin" class="page hidden">
+ <div id="adminLogin" class="panel">
+  <h2>Administrator Login</h2><p class="muted">Demo password: <b>admin123</b></p>
+  <label>Password</label><input id="adminPassword" type="password">
+  <button class="primary" onclick="loginAdmin()">Login</button><p id="loginMessage" class="muted"></p>
+ </div>
+ <div id="adminPanel" class="hidden">
+  <div class="panel"><h2>Pending Mechanic Approvals</h2><div id="pendingList"></div></div>
+  <div class="panel"><h2>All Mechanic Listings</h2><div class="tablewrap"><table>
+   <thead><tr><th>Business</th><th>Location</th><th>Service</th><th>Status</th><th>Action</th></tr></thead>
+   <tbody id="adminRows"></tbody>
+  </table></div><button onclick="logoutAdmin()">Logout</button></div>
+ </div>
+</section>
+</main>
+<footer>RoadRescue • Internet Programming Lab • Educational prototype</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const MK="roadrescue_mechanics_v1",FK="roadrescue_feedback_v1";
+const initial=[
+ {id:"M101",name:"City Auto Care",phone:"9000000011",location:"Chennai",service:"Car Repair",address:"Anna Salai, Chennai",license:"DEMO-LIC-101",status:"Approved",lat:13.0604,lng:80.2496},
+ {id:"M102",name:"Quick Bike Service",phone:"9000000012",location:"Chennai",service:"Bike Repair",address:"T Nagar, Chennai",license:"DEMO-LIC-102",status:"Approved",lat:13.0418,lng:80.2341},
+ {id:"M103",name:"Rapid Tyre Help",phone:"9000000013",location:"Coimbatore",service:"Tyre Puncture",address:"Gandhipuram, Coimbatore",license:"DEMO-LIC-103",status:"Approved",lat:11.0183,lng:76.9725}
+];
+function read(k,f=[]){try{return JSON.parse(localStorage.getItem(k))||f}catch{return f}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+let mechanics=read(MK);
+if(!mechanics.length){mechanics=initial;save(MK,mechanics)}
+let feedback=read(FK),admin=false,map=null,markers=null;
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showPage(id,button){
+ document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ const b=button||document.querySelector('nav button[data-page="'+id+'"]');if(b)b.classList.add("active");
+ refresh();
+ if(id==="search")setTimeout(initMap,100);
+}
+document.getElementById("mechanicForm").addEventListener("submit",e=>{
+ e.preventDefault();const f=new FormData(e.target);
+ const lat=f.get("lat")===""?null:Number(f.get("lat"));
+ const lng=f.get("lng")===""?null:Number(f.get("lng"));
+ if((lat===null)!==(lng===null)){alert("Enter both latitude and longitude, or leave both blank.");return}
+ mechanics.push({
+ id:"M"+Date.now().toString().slice(-8),name:f.get("name").trim(),
+ phone:f.get("phone").trim(),location:f.get("location").trim(),
+ service:f.get("service"),address:f.get("address").trim(),
+ license:f.get("license").trim(),status:"Pending",
+ lat:lat,lng:lng
+ });
+ save(MK,mechanics);e.target.reset();refresh();
+ alert("Registration submitted. Status: Pending admin approval.");
+});
+function renderMechanics(){
+ const q=document.getElementById("locationFilter").value.trim().toLowerCase();
+ const service=document.getElementById("serviceFilter").value;
+ const list=mechanics.filter(m=>m.status==="Approved"&&m.location.toLowerCase().includes(q)&&(!service||m.service===service));
+ document.getElementById("mechanicCards").innerHTML=list.map(m=>
+ `<article class="mechanic"><span class="tag">${esc(m.service)}</span><h3>${esc(m.name)}</h3>
+ <p class="muted">📍 ${esc(m.address)}<br>Area: ${esc(m.location)}<br>☎ ${esc(m.phone)}</p>
+ <button class="primary" onclick="showPage('feedback')">Give Feedback</button>
+ ${m.lat!==null&&m.lng!==null?`<button onclick="focusMap(${Number(m.lat)},${Number(m.lng)})">View Map</button>`:""}
+ </article>`).join("")||"<p>No approved mechanics match your search.</p>";
+ renderMapMarkers(list);
+}
+function initMap(){
+ if(typeof L==="undefined"){document.getElementById("map").innerHTML="Map library unavailable. Check your internet connection.";return}
+ if(!map){
+  map=L.map("map").setView([13.0827,80.2707],7);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap"}).addTo(map);
+  markers=L.layerGroup().addTo(map);
+ }
+ map.invalidateSize();renderMapMarkers();
+}
+function renderMapMarkers(list){
+ if(!map||!markers)return;
+ markers.clearLayers();
+ const shown=list||mechanics.filter(m=>m.status==="Approved");
+ shown.forEach(m=>{
+  if(m.lat===null||m.lng===null||!Number.isFinite(Number(m.lat))||!Number.isFinite(Number(m.lng)))return;
+  L.marker([Number(m.lat),Number(m.lng)]).addTo(markers).bindPopup("<b>"+esc(m.name)+"</b><br>"+esc(m.address));
+ });
+}
+function focusMap(lat,lng){showPage("search");setTimeout(()=>{if(map){map.setView([lat,lng],14);renderMapMarkers()}},150)}
+function renderMyBusiness(){
+ const phone=document.getElementById("businessPhone").value.trim();
+ const found=mechanics.filter(m=>phone&&m.phone===phone);
+ document.getElementById("myBusiness").innerHTML=found.map(m=>
+ `<p>${esc(m.name)} — <span class="tag">${esc(m.status)}</span></p>`).join("")||"No matching listing found.";
+}
+function renderFeedback(){
+ const approved=mechanics.filter(m=>m.status==="Approved");
+ document.getElementById("feedbackMechanic").innerHTML=approved.map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("");
+ document.getElementById("feedbackList").innerHTML=feedback.slice().reverse().map(f=>{
+ const m=mechanics.find(x=>x.id===f.mechanicId);
+ return `<div class="panel"><b>${esc(m?m.name:"Mechanic listing")}</b> — ${"★".repeat(f.rating)}<p>${esc(f.text)}</p><span class="muted">${esc(f.date)}</span></div>`;
+ }).join("")||"<p>No feedback submitted yet.</p>";
+}
+document.getElementById("feedbackForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const id=document.getElementById("feedbackMechanic").value;
+ if(!mechanics.some(m=>m.id===id&&m.status==="Approved")){alert("Select an approved mechanic.");return}
+ feedback.push({id:"F"+Date.now(),mechanicId:id,rating:Number(document.getElementById("rating").value),text:document.getElementById("feedbackText").value.trim(),date:new Date().toLocaleDateString()});
+ save(FK,feedback);document.getElementById("feedbackText").value="";refresh();alert("Feedback submitted.");
+});
+function loginAdmin(){
+ if(document.getElementById("adminPassword").value==="admin123"){
+  admin=true;document.getElementById("adminLogin").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");refresh();
+ }else document.getElementById("loginMessage").textContent="Incorrect password.";
+}
+function logoutAdmin(){
+ admin=false;document.getElementById("adminLogin").classList.remove("hidden");
+ document.getElementById("adminPanel").classList.add("hidden");
+ document.getElementById("adminPassword").value="";
+}
+function approve(id,status){
+ if(!admin)return;
+ mechanics=mechanics.map(m=>m.id===id?{...m,status}:m);save(MK,mechanics);refresh();
+}
+function removeMechanic(id){
+ if(!admin||!confirm("Delete this mechanic listing?"))return;
+ mechanics=mechanics.filter(m=>m.id!==id);save(MK,mechanics);refresh();
+}
+function renderAdmin(){
+ if(!admin)return;
+ const pending=mechanics.filter(m=>m.status==="Pending");
+ document.getElementById("pendingList").innerHTML=pending.map(m=>
+ `<div class="panel"><b>${esc(m.name)}</b> — ${esc(m.service)}<p class="muted">${esc(m.address)} | License reference: ${esc(m.license)}</p>
+ <button class="primary" onclick="approve('${esc(m.id)}','Approved')">Approve</button>
+ <button onclick="approve('${esc(m.id)}','Rejected')">Reject</button></div>`).join("")||"<p>No pending registrations.</p>";
+ document.getElementById("adminRows").innerHTML=mechanics.map(m=>
+ `<tr><td>${esc(m.name)}</td><td>${esc(m.location)}</td><td>${esc(m.service)}</td><td>${esc(m.status)}</td>
+ <td><button onclick="removeMechanic('${esc(m.id)}')">Delete</button></td></tr>`).join("");
+}
+function refresh(){
+ mechanics=read(MK,initial);feedback=read(FK);
+ document.getElementById("totalApproved").textContent=mechanics.filter(m=>m.status==="Approved").length;
+ document.getElementById("totalAreas").textContent=new Set(mechanics.filter(m=>m.status==="Approved").map(m=>m.location.toLowerCase())).size;
+ document.getElementById("totalFeedback").textContent=feedback.length;
+ renderMechanics();renderMyBusiness();renderFeedback();renderAdmin();
+}
+window.addEventListener("storage",refresh);refresh();
+</script>
+</body>
+</html>

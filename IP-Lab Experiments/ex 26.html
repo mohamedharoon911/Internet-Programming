@@ -1,0 +1,329 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Squad | Challan Management</title>
+<style>
+:root{--bg:#0b1220;--panel:#141f32;--line:#2a3a52;--text:#edf4ff;--muted:#9baec8;--blue:#60a5fa;--green:#34d399;--red:#fb7185}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{padding:22px 5%;background:#101b2d;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.brand{font-size:23px;font-weight:bold}.brand span{color:var(--blue)}
+header small{color:var(--muted)}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px 5%;background:#0e1929;position:sticky;top:0;z-index:2}
+button,.btn{border:0;border-radius:9px;padding:11px 15px;cursor:pointer;font-weight:bold;background:var(--blue);color:#071426}
+nav button{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+nav button:hover,button:hover{filter:brightness(1.15)}
+main{max-width:1150px;margin:auto;padding:24px 5%}
+.hero{padding:28px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(120deg,#172b48,#111c2f)}
+.hero h1{font-size:clamp(26px,5vw,42px);margin:8px 0}
+.hero p,.muted{color:var(--muted);line-height:1.6}
+.tag{display:inline-block;background:#1d3859;color:#93c5fd;padding:6px 10px;border-radius:20px;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px;margin:20px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:19px;min-width:0}
+.card h3{margin-top:0}
+.metric{font-size:30px;font-weight:bold;margin:10px 0}
+label{display:block;font-size:13px;color:#c3d2e7;margin:12px 0 6px}
+input,select,textarea{width:100%;padding:12px;background:#0b1627;color:var(--text);border:1px solid #344760;border-radius:8px}
+textarea{min-height:75px;resize:vertical}
+form button{margin-top:15px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hidden{display:none!important}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:#93c5fd}
+.table-wrap{overflow-x:auto}
+.status{padding:5px 8px;border-radius:12px;background:#163a31;color:#6ee7b7;font-size:11px}
+.receipt{border:1px dashed var(--blue);padding:20px;border-radius:12px;margin-top:15px;background:#0c192b}
+.receipt h3{color:var(--green)}
+#photoPreview{max-width:100%;max-height:220px;border-radius:10px;margin-top:10px}
+footer{text-align:center;color:var(--muted);padding:25px;border-top:1px solid var(--line)}
+.notice{padding:12px;border-radius:9px;background:#342b18;color:#fcd98a;font-size:13px;line-height:1.5}
+.danger{background:#7f1d1d;color:white}
+.secondary{background:#263750;color:white}
+@media(max-width:600px){.row{grid-template-columns:1fr}header{align-items:flex-start}main{padding-top:15px}th,td{padding:8px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">🚦 TRAFFIC <span>SQUAD</span><br>
+    <small>Penalty Collection &amp; Case Management</small>
+  </div>
+  <small id="clock">Loading time...</small>
+</header>
+
+<nav>
+  <button onclick="showPage('home')">Dashboard</button>
+  <button onclick="showPage('user')">User / Challan</button>
+  <button onclick="showPage('police')">Police Portal</button>
+  <button onclick="showPage('admin')">Admin Reports</button>
+  <button onclick="showPage('map')">Traffic Map</button>
+</nav>
+
+<main>
+<section id="home">
+  <div class="hero">
+    <span class="tag">DIGITAL TRAFFIC MANAGEMENT</span>
+    <h1>Safer roads. Smarter enforcement.</h1>
+    <p>Create demo traffic cases, attach proof photographs, issue challan receipts and view reports from one dashboard.</p>
+    <button onclick="showPage('police')">Create Traffic Case →</button>
+    <button class="secondary" onclick="showPage('user')">Find My Challan</button>
+  </div>
+  <div class="grid">
+    <div class="card"><span class="muted">Total demo cases</span><div class="metric" id="total">0</div></div>
+    <div class="card"><span class="muted">Total fine amount</span><div class="metric" id="fine">₹0</div></div>
+    <div class="card"><span class="muted">Cases today</span><div class="metric" id="today">0</div></div>
+  </div>
+  <div class="card">
+    <h3>Recent Traffic Cases</h3>
+    <div id="recent" class="table-wrap"></div>
+  </div>
+</section>
+
+<section id="user" class="hidden">
+  <h2>👤 User Portal</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Find Challan / Filed Case</h3>
+      <p class="muted">Enter the vehicle number or challan ID used in the demonstration.</p>
+      <form onsubmit="findCases(event)">
+        <label>Vehicle Number or Challan ID</label>
+        <input id="lookup" placeholder="TN01AB1234 or TS-1001" required>
+        <button type="submit">Search Records</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>My Challan Results</h3>
+      <div id="userResults" class="muted">Your search results will appear here.</div>
+    </div>
+  </div>
+</section>
+
+<section id="police" class="hidden">
+  <h2>👮 Police Portal</h2>
+  <div class="notice">Student demo: this portal does not authenticate real police officers or create legally valid FIRs.</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Create Traffic Case</h3>
+      <form id="caseForm" onsubmit="createCase(event)">
+        <label>Vehicle Owner Name</label>
+        <input id="owner" required placeholder="Owner name">
+        <div class="row">
+          <div><label>Vehicle Number</label><input id="vehicle" required placeholder="TN01AB1234"></div>
+          <div><label>Violation</label>
+            <select id="violation">
+              <option>Helmet violation</option>
+              <option>Signal jumping</option>
+              <option>Speeding</option>
+              <option>No parking</option>
+              <option>Seat belt violation</option>
+              <option>Other traffic violation</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div><label>Fine Amount (₹)</label><input id="amount" type="number" min="0" required value="500"></div>
+          <div><label>Case Date</label><input id="caseDate" type="date" required></div>
+        </div>
+        <label>Location / Road</label>
+        <input id="location" required placeholder="Road or junction">
+        <label>Case Description</label>
+        <textarea id="description" placeholder="Enter violation details"></textarea>
+        <label>Proof Photograph (optional)</label>
+        <input id="photo" type="file" accept="image/*" onchange="previewPhoto(event)">
+        <img id="photoPreview" class="hidden" alt="Proof photo preview">
+        <button type="submit">Generate Demo Challan</button>
+      </form>
+      <div id="caseMessage"></div>
+    </div>
+    <div class="card">
+      <h3>Case Management</h3>
+      <p class="muted">Review and remove demonstration records.</p>
+      <div id="policeCases" class="table-wrap"></div>
+    </div>
+  </div>
+</section>
+
+<section id="admin" class="hidden">
+  <h2>🛡️ Admin Dashboard</h2>
+  <div class="notice">For demonstration only. A production system requires secure administrator authentication and access controls.</div>
+  <div class="card">
+    <h3>Daily Traffic Report</h3>
+    <button onclick="exportCSV()">Export CSV Report</button>
+    <div id="adminCases" class="table-wrap"></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>Police Login Management — Demo</h3>
+    <p class="muted">This prototype displays a sample police account record. It does not manage real accounts.</p>
+    <table><tr><th>Officer ID</th><th>Role</th><th>Status</th></tr>
+    <tr><td>DEMO-POLICE-01</td><td>Traffic Officer</td><td><span class="status">Sample account</span></td></tr></table>
+  </div>
+</section>
+
+<section id="map" class="hidden">
+  <h2>🗺️ Traffic Location Map</h2>
+  <div class="card">
+    <p>Open a map to inspect the location entered in a case. This link opens a general map search, not a live traffic feed.</p>
+    <form onsubmit="openMap(event)">
+      <label>Road, junction or location</label>
+      <input id="mapLocation" placeholder="e.g. Anna Salai, Chennai" required>
+      <button type="submit">Open Map</button>
+    </form>
+    <p class="muted">Live traffic data depends on the map provider and is not collected by this prototype.</p>
+  </div>
+</section>
+</main>
+
+<footer>Traffic Squad · Internet Programming Lab · Educational prototype</footer>
+
+<script>
+const KEY = "trafficSquadDemoCases";
+let proofImage = "";
+
+function getCases(){
+  try{return JSON.parse(localStorage.getItem(KEY) || "[]")}
+  catch{return []}
+}
+function saveCases(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[ch]));
+}
+function showPage(id){
+  document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  refresh();
+}
+function refresh(){
+  const cases=getCases();
+  document.getElementById("total").textContent=cases.length;
+  document.getElementById("fine").textContent="₹"+cases.reduce((sum,c)=>sum+Number(c.amount||0),0).toLocaleString("en-IN");
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById("today").textContent=cases.filter(c=>c.date===today).length;
+
+  const table=(rows,admin=false)=>rows.length?
+    `<table><tr><th>Challan</th><th>Vehicle / Violation</th><th>Fine</th>${admin?"<th>Date</th>":""}<th>Action</th></tr>`+
+    rows.map(c=>`<tr>
+      <td>${escapeHTML(c.id)}</td>
+      <td>${escapeHTML(c.vehicle)}<br>${escapeHTML(c.violation)}</td>
+      <td>₹${Number(c.amount).toLocaleString("en-IN")}</td>
+      ${admin?`<td>${escapeHTML(c.date)}</td>`:""}
+      <td><button class="secondary" onclick="receipt('${c.id}')">Receipt</button>
+      <button class="danger" onclick="removeCase('${c.id}')">Delete</button></td>
+    </tr>`).join("")+"</table>":"<p class='muted'>No cases available.</p>";
+
+  document.getElementById("recent").innerHTML=table(cases.slice().reverse().slice(0,5));
+  document.getElementById("policeCases").innerHTML=table(cases.slice().reverse());
+  document.getElementById("adminCases").innerHTML=table(cases.slice().reverse(),true);
+}
+function previewPhoto(event){
+  const file=event.target.files[0];
+  const img=document.getElementById("photoPreview");
+  proofImage="";
+  if(!file){img.classList.add("hidden");return}
+  if(!file.type.startsWith("image/")){alert("Please choose an image.");event.target.value="";return}
+  if(file.size>700*1024){
+    alert("For this demo, choose an image smaller than 700 KB.");
+    event.target.value="";img.classList.add("hidden");return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    proofImage=reader.result;
+    img.src=proofImage;img.classList.remove("hidden");
+  };
+  reader.readAsDataURL(file);
+}
+function createCase(event){
+  event.preventDefault();
+  const cases=getCases();
+  const id="TS-"+(1001+Date.now()%8999);
+  const record={
+    id,owner:document.getElementById("owner").value.trim(),
+    vehicle:document.getElementById("vehicle").value.trim().toUpperCase(),
+    violation:document.getElementById("violation").value,
+    amount:Number(document.getElementById("amount").value),
+    date:document.getElementById("caseDate").value,
+    location:document.getElementById("location").value.trim(),
+    description:document.getElementById("description").value.trim(),
+    photo:proofImage
+  };
+  cases.push(record);saveCases(cases);
+  document.getElementById("caseMessage").innerHTML=
+    `<div class="receipt"><h3>✓ Demo Challan Created</h3>
+    <p>Challan ID: <b>${escapeHTML(id)}</b></p>
+    <p>Vehicle: ${escapeHTML(record.vehicle)}</p>
+    <p>Fine: ₹${record.amount.toLocaleString("en-IN")}</p>
+    <button onclick="receipt('${id}')">View Receipt</button></div>`;
+  document.getElementById("caseForm").reset();
+  document.getElementById("caseDate").value=new Date().toISOString().slice(0,10);
+  document.getElementById("photoPreview").classList.add("hidden");proofImage="";
+  refresh();
+}
+function findCases(event){
+  event.preventDefault();
+  const query=document.getElementById("lookup").value.trim().toUpperCase();
+  const matches=getCases().filter(c=>c.vehicle.toUpperCase()===query||c.id.toUpperCase()===query);
+  const out=document.getElementById("userResults");
+  if(!matches.length){out.textContent="No matching demonstration record found.";return}
+  out.innerHTML=matches.map(c=>`<div class="receipt">
+    <h3>Traffic Challan</h3><p><b>ID:</b> ${escapeHTML(c.id)}</p>
+    <p><b>Owner:</b> ${escapeHTML(c.owner)}</p>
+    <p><b>Vehicle:</b> ${escapeHTML(c.vehicle)}</p>
+    <p><b>Violation:</b> ${escapeHTML(c.violation)}</p>
+    <p><b>Fine:</b> ₹${Number(c.amount).toLocaleString("en-IN")}</p>
+    <p><b>Date:</b> ${escapeHTML(c.date)}</p>
+    <p><b>Location:</b> ${escapeHTML(c.location)}</p>
+    <p><b>Status:</b> Demo record — not an official challan</p>
+    <button onclick="receipt('${c.id}')">Print Receipt</button>
+  </div>`).join("");
+}
+function receipt(id){
+  const c=getCases().find(x=>x.id===id);if(!c)return;
+  const w=window.open("","_blank","width=650,height=750");
+  if(!w){alert("Allow pop-ups to print the receipt.");return}
+  w.document.write(`<!DOCTYPE html><html><head><title>Demo Challan</title>
+  <style>body{font-family:Arial;padding:30px;color:#222}h1{color:#145da0}
+  .box{border:2px dashed #555;padding:20px}img{max-width:250px;max-height:200px}
+  @media print{button{display:none}}</style></head><body>
+  <h1>TRAFFIC SQUAD</h1><h2>Demonstration Challan Receipt</h2><div class="box">
+  <p><b>Challan ID:</b> ${escapeHTML(c.id)}</p>
+  <p><b>Owner:</b> ${escapeHTML(c.owner)}</p><p><b>Vehicle:</b> ${escapeHTML(c.vehicle)}</p>
+  <p><b>Violation:</b> ${escapeHTML(c.violation)}</p><p><b>Fine:</b> ₹${Number(c.amount).toLocaleString("en-IN")}</p>
+  <p><b>Date:</b> ${escapeHTML(c.date)}</p><p><b>Location:</b> ${escapeHTML(c.location)}</p>
+  <p><b>Description:</b> ${escapeHTML(c.description)}</p>
+  ${c.photo?`<p>Proof photo:</p><img src="${c.photo}" alt="Proof photo">`:""}
+  <hr><b>Educational prototype only — not an official legal document.</b></div>
+  <button onclick="window.print()">Print / Save as PDF</button></body></html>`);
+  w.document.close();
+}
+function removeCase(id){
+  if(!confirm("Delete this demonstration case?"))return;
+  saveCases(getCases().filter(c=>c.id!==id));refresh();
+}
+function exportCSV(){
+  const rows=getCases();
+  if(!rows.length){alert("No records to export.");return}
+  const fields=["id","owner","vehicle","violation","amount","date","location","description"];
+  const csv=[fields.join(","),...rows.map(c=>fields.map(k=>`"${String(c[k]??"").replace(/"/g,'""')}"`).join(","))].join("\n");
+  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+  const a=document.createElement("a");a.href=url;a.download="traffic-squad-demo-report.csv";a.click();
+  URL.revokeObjectURL(url);
+}
+function openMap(event){
+  event.preventDefault();
+  const place=document.getElementById("mapLocation").value.trim();
+  window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(place),"_blank","noopener");
+}
+function updateClock(){
+  document.getElementById("clock").textContent=new Date().toLocaleString();
+}
+document.getElementById("caseDate").value=new Date().toISOString().slice(0,10);
+updateClock();setInterval(updateClock,1000);refresh();
+</script>
+</body>
+</html>
