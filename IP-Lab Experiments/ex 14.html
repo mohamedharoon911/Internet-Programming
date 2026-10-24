@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReNewMarket</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f7f5;color:#20352c}
+header{background:#176b50;color:white;text-align:center;padding:22px}
+nav{background:#d9eee4;padding:13px;text-align:center}
+nav a{margin:12px;color:#176b50;text-decoration:none;font-weight:bold}
+main{max-width:1000px;margin:auto;padding:20px}
+.hero{background:#d9eee4;padding:22px;text-align:center;border-radius:12px}
+.controls{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap}
+input,select{padding:10px;border:1px solid #b8cec3;border-radius:6px}
+.controls input{flex:1;min-width:180px}
+button{background:#176b50;color:white;padding:10px 13px;border:0;border-radius:6px;cursor:pointer}
+button:hover{background:#104b39}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.card{background:white;border-radius:12px;padding:16px;text-align:center;box-shadow:0 3px 9px #d8e3dd}
+.pic{font-size:58px;background:#e6f3ec;padding:14px;border-radius:9px}
+.price{color:#176b50;font-weight:bold;font-size:19px}
+section{margin-top:25px}
+.item{padding:10px;border-bottom:1px solid #ddd}
+.status{font-weight:bold;color:#176b50}
+footer{text-align:center;padding:16px;background:#d9eee4;margin-top:25px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>♻️ ReNewMarket</h1>
+<p>Buy Smart. Sell Second-Hand. Reduce Waste.</p>
+</header>
+
+<nav>
+<a href="#home">Home</a>
+<a href="#products">Products</a>
+<a href="#cart">Cart</a>
+<a href="#admin">Admin</a>
+</nav>
+
+<main>
+<section id="home" class="hero">
+<h2>Give Pre-loved Products a New Life!</h2>
+<p>Affordable electronics, furniture, clothing and more.</p>
+</section>
+
+<section id="products">
+<h2>Available Products</h2>
+<div class="controls">
+<input id="search" placeholder="Search products..." oninput="displayProducts()">
+<select id="category" onchange="displayProducts()">
+<option value="All">All Categories</option>
+<option>Electronics</option>
+<option>Furniture</option>
+<option>Clothing</option>
+<option>Collectibles</option>
+</select>
+</div>
+<div id="productList" class="products"></div>
+</section>
+
+<section id="cart">
+<h2>🛒 Shopping Cart</h2>
+<div id="cartItems">Your cart is empty.</div>
+<h3>Total: ₹<span id="total">0</span></h3>
+<input id="buyer" placeholder="Enter your name">
+<button onclick="checkout()">Place Order</button>
+<p id="message"></p>
+</section>
+
+<section id="orders">
+<h2>📦 Order Management</h2>
+<div id="orderList">No orders placed yet.</div>
+</section>
+
+<section id="admin">
+<h2>Admin: Add a Product</h2>
+<p><input id="newName" placeholder="Product name"></p>
+<p><input id="newPrice" type="number" min="1" placeholder="Price in ₹"></p>
+<p><input id="newEmoji" placeholder="Product emoji, e.g. 📱"></p>
+<p>
+<select id="newCategory">
+<option>Electronics</option>
+<option>Furniture</option>
+<option>Clothing</option>
+<option>Collectibles</option>
+</select>
+</p>
+<button onclick="addProduct()">Add Product</button>
+<p id="adminMessage"></p>
+</section>
+</main>
+
+<footer>© 2026 ReNewMarket | Reuse • Recycle • Resell</footer>
+
+<script>
+let products = [
+{id:1,name:"Used Laptop",category:"Electronics",price:12000,emoji:"💻"},
+{id:2,name:"Study Table",category:"Furniture",price:1800,emoji:"🪑"},
+{id:3,name:"Denim Jacket",category:"Clothing",price:500,emoji:"🧥"},
+{id:4,name:"Vintage Camera",category:"Collectibles",price:2500,emoji:"📷"},
+{id:5,name:"Headphones",category:"Electronics",price:700,emoji:"🎧"},
+{id:6,name:"Bookshelf",category:"Furniture",price:1100,emoji:"📚"}
+];
+
+let cart = [];
+let orders = [];
+let nextId = 7;
+
+function displayProducts(){
+ const search = document.getElementById("search").value.toLowerCase();
+ const category = document.getElementById("category").value;
+
+ const filtered = products.filter(p =>
+   p.name.toLowerCase().includes(search) &&
+   (category === "All" || p.category === category)
+ );
+
+ document.getElementById("productList").innerHTML = filtered.length
+ ? filtered.map(p => `
+ <div class="card">
+   <div class="pic">${p.emoji}</div>
+   <h3>${p.name}</h3>
+   <p>${p.category} | Pre-owned</p>
+   <p class="price">₹${p.price}</p>
+   <button onclick="addToCart(${p.id})">Add to Cart</button>
+   <button onclick="deleteProduct(${p.id})">Remove Listing</button>
+ </div>`).join("")
+ : "<p>No products found.</p>";
+}
+
+function addToCart(id){
+ const p = products.find(x => x.id === id);
+ if(!p) return;
+ const item = cart.find(x => x.id === id);
+ if(item) item.qty++;
+ else cart.push({...p,qty:1});
+ displayCart();
+}
+
+function displayCart(){
+ document.getElementById("cartItems").innerHTML = cart.length
+ ? cart.map(p => `
+ <div class="item">${p.emoji} ${p.name} — ₹${p.price}
+ × ${p.qty}
+ <button onclick="changeQty(${p.id},-1)">−</button>
+ <button onclick="changeQty(${p.id},1)">+</button>
+ <button onclick="removeCartItem(${p.id})">Remove</button>
+ </div>`).join("")
+ : "Your cart is empty.";
+
+ document.getElementById("total").textContent =
+ cart.reduce((sum,p)=>sum+p.price*p.qty,0);
+}
+
+function changeQty(id,amount){
+ const item = cart.find(p=>p.id===id);
+ if(item) item.qty += amount;
+ cart = cart.filter(p=>p.qty>0);
+ displayCart();
+}
+
+function removeCartItem(id){
+ cart = cart.filter(p=>p.id!==id);
+ displayCart();
+}
+
+function checkout(){
+ const buyer = document.getElementById("buyer").value.trim();
+ if(!buyer){alert("Please enter your name.");return;}
+ if(cart.length===0){alert("Your cart is empty.");return;}
+
+ const order = {
+ id:orders.length+1,
+ buyer:buyer,
+ items:cart.map(p=>({...p})),
+ total:cart.reduce((sum,p)=>sum+p.price*p.qty,0),
+ status:"Shipped"
+ };
+ orders.push(order);
+ cart=[];
+ displayCart();
+ displayOrders();
+ document.getElementById("message").textContent =
+ "Order placed successfully! Order ID: "+order.id;
+}
+
+function displayOrders(){
+ document.getElementById("orderList").innerHTML = orders.length
+ ? orders.map(o=>`
+ <div class="item">
+ <b>Order #${o.id}</b> — ${o.buyer}<br>
+ Items: ${o.items.map(p=>p.name+" × "+p.qty).join(", ")}<br>
+ Total: ₹${o.total}<br>
+ Status: <span class="status">${o.status}</span><br>
+ <button onclick="updateStatus(${o.id})">Mark Received</button>
+ <button onclick="deleteOrder(${o.id})">Delete Order</button>
+ </div>`).join("")
+ : "No orders placed yet.";
+}
+
+function updateStatus(id){
+ const order = orders.find(o=>o.id===id);
+ if(order){
+   order.status="Received";
+   displayOrders();
+ }
+}
+
+function deleteOrder(id){
+ orders=orders.filter(o=>o.id!==id);
+ displayOrders();
+}
+
+function addProduct(){
+ const name=document.getElementById("newName").value.trim();
+ const price=Number(document.getElementById("newPrice").value);
+ const emoji=document.getElementById("newEmoji").value.trim() || "📦";
+ const category=document.getElementById("newCategory").value;
+
+ if(!name || price<=0){
+   document.getElementById("adminMessage").textContent =
+     "Enter a product name and a valid price.";
+   return;
+ }
+
+ products.push({id:nextId++,name,price,emoji,category});
+ displayProducts();
+ document.getElementById("adminMessage").textContent =
+   "Product added successfully!";
+ document.getElementById("newName").value="";
+ document.getElementById("newPrice").value="";
+ document.getElementById("newEmoji").value="";
+}
+
+function deleteProduct(id){
+ products=products.filter(p=>p.id!==id);
+ cart=cart.filter(p=>p.id!==id);
+ displayProducts();
+ displayCart();
+}
+
+displayProducts();
+displayCart();
+displayOrders();
+</script>
+</body>
+</html>

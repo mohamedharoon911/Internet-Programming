@@ -1,0 +1,216 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ComplainEase</title>
+<style>
+body{font-family:Arial;margin:0;background:#eef3f8;color:#26364a}
+header{background:#123c69;color:white;text-align:center;padding:22px}
+main{max-width:850px;margin:20px auto;padding:12px}
+.card{background:white;padding:18px;margin:15px 0;border-radius:10px;box-shadow:0 3px 10px #ccd3dd}
+input,select,textarea,button{padding:10px;margin:5px;border:1px solid #bbb;border-radius:5px}
+textarea{width:90%;height:70px}
+button{background:#1769aa;color:white;border:0;cursor:pointer}
+.complaint{background:#edf5fc;padding:12px;margin:10px 0;border-radius:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>ComplainEase</h1>
+<p>Register • Track • Resolve</p>
+</header>
+
+<main>
+<section class="card">
+<h2>User Registration</h2>
+<input id="userName" placeholder="Full name">
+<input id="userEmail" type="email" placeholder="Email">
+<button onclick="registerUser()">Register</button>
+<p id="userMsg"></p>
+</section>
+
+<section class="card">
+<h2>Submit a Complaint</h2>
+<input id="complainant" placeholder="Your name">
+<select id="category">
+<option>Road Problem</option>
+<option>Water Supply</option>
+<option>Electricity</option>
+<option>Sanitation</option>
+<option>Public Safety</option>
+<option>Other</option>
+</select><br>
+<textarea id="description" placeholder="Describe your complaint"></textarea><br>
+<input id="location" placeholder="Complaint location">
+<button onclick="postComplaint()">Submit Complaint</button>
+<p id="postMsg"></p>
+</section>
+
+<section class="card">
+<h2>Track Complaint</h2>
+<input id="trackId" placeholder="Enter complaint ID">
+<button onclick="trackComplaint()">Track</button>
+<p id="trackResult"></p>
+</section>
+
+<section class="card">
+<h2>My Complaints & Feedback</h2>
+<div id="myComplaints"></div>
+</section>
+
+<section class="card">
+<h2>Officer Dashboard</h2>
+<p>View complaints and update their status.</p>
+<div id="officerList"></div>
+</section>
+
+<section class="card">
+<h2>Admin Dashboard</h2>
+<p>Manage complaint records and accounts in this demonstration.</p>
+<div id="adminList"></div>
+<button onclick="clearComplaints()">Clear All Complaints</button>
+<p id="adminMsg"></p>
+</section>
+
+<section class="card">
+<h2>Contact Admin</h2>
+<p>Email: support@complainease.example</p>
+<p>Phone: +91 98765 43210</p>
+<p>Location: <a href="https://www.google.com/maps" target="_blank">Open Google Maps</a></p>
+</section>
+</main>
+
+<script>
+let complaints=[];
+let registeredUser=null;
+
+function registerUser(){
+ const name=document.getElementById("userName").value.trim();
+ const email=document.getElementById("userEmail").value.trim();
+
+ if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+   alert("Enter a valid name and email.");
+   return;
+ }
+ registeredUser={name,email};
+ document.getElementById("userMsg").textContent=
+   "Registration successful for "+name+".";
+}
+
+function postComplaint(){
+ const name=document.getElementById("complainant").value.trim();
+ const category=document.getElementById("category").value;
+ const description=document.getElementById("description").value.trim();
+ const location=document.getElementById("location").value.trim();
+
+ if(!name||!description||!location){
+   alert("Please fill in all complaint details.");
+   return;
+ }
+
+ const complaint={
+   id:"CE"+Date.now(),
+   name,category,description,location,
+   status:"Submitted",
+   proof:"Not provided",
+   feedback:""
+ };
+
+ complaints.push(complaint);
+ document.getElementById("postMsg").textContent=
+   "Complaint submitted! Your ID is "+complaint.id;
+
+ document.getElementById("description").value="";
+ document.getElementById("location").value="";
+ renderAll();
+}
+
+function trackComplaint(){
+ const id=document.getElementById("trackId").value.trim();
+ const c=complaints.find(item=>item.id===id);
+
+ document.getElementById("trackResult").textContent=c?
+   "Complaint: "+c.category+" | Status: "+c.status+
+   " | Location: "+c.location:
+   "Complaint ID not found.";
+}
+
+function renderAll(){
+ const mine=document.getElementById("myComplaints");
+ const officer=document.getElementById("officerList");
+ const admin=document.getElementById("adminList");
+
+ mine.innerHTML="";
+ officer.innerHTML="";
+ admin.innerHTML="";
+
+ complaints.forEach(c=>{
+   const box=document.createElement("div");
+   box.className="complaint";
+   box.innerHTML="<b>"+c.id+"</b> — "+c.category+
+     "<p>"+c.description+"</p><p>Location: "+c.location+
+     "</p><p>Status: <b>"+c.status+"</b></p>";
+
+   const feedback=document.createElement("input");
+   feedback.placeholder="Enter feedback";
+   const fb=document.createElement("button");
+   fb.textContent="Submit Feedback";
+   fb.onclick=()=>{
+     c.feedback=feedback.value.trim();
+     alert(c.feedback?"Feedback submitted.":"Enter feedback first.");
+     renderAll();
+   };
+   if(c.feedback){
+     box.innerHTML+="<p>Feedback: "+c.feedback+"</p>";
+   }
+   box.append(feedback,fb);
+   mine.appendChild(box);
+
+   const obox=document.createElement("div");
+   obox.className="complaint";
+   obox.textContent=c.id+" — "+c.category+" — "+c.status+" ";
+
+   const status=document.createElement("select");
+   ["Submitted","In Progress","Resolved","Rejected"].forEach(s=>{
+     const opt=document.createElement("option");
+     opt.value=s;opt.textContent=s;
+     if(c.status===s)opt.selected=true;
+     status.appendChild(opt);
+   });
+   status.onchange=()=>{c.status=status.value;renderAll();};
+
+   const proof=document.createElement("input");
+   proof.placeholder="Proof of work / remarks";
+   proof.value=c.proof==="Not provided"?"":c.proof;
+   const save=document.createElement("button");
+   save.textContent="Save Proof";
+   save.onclick=()=>{
+     c.proof=proof.value.trim()||"Not provided";
+     alert("Proof/remarks updated.");
+     renderAll();
+   };
+   obox.append(status,proof,save);
+   officer.appendChild(obox);
+
+   const abox=document.createElement("div");
+   abox.className="complaint";
+   abox.textContent=c.id+" | "+c.name+" | "+c.status+
+     " | Proof: "+c.proof;
+   admin.appendChild(abox);
+ });
+}
+
+function clearComplaints(){
+ if(confirm("Delete all complaint records?")){
+   complaints=[];
+   renderAll();
+   document.getElementById("adminMsg").textContent=
+     "All complaint records deleted.";
+ }
+}
+</script>
+</body>
+</html>
+```

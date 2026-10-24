@@ -1,0 +1,234 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyToll - Toll Payment System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+body{font-family:Arial;margin:0;background:#eef3f8;color:#203047}
+header{background:#123c69;color:white;text-align:center;padding:20px}
+main{max-width:850px;margin:20px auto;padding:12px}
+.card{background:white;padding:18px;margin:15px 0;border-radius:12px;box-shadow:0 3px 10px #ccd3dd}
+input,select,button{padding:10px;margin:5px;border:1px solid #bbb;border-radius:5px}
+button{background:#1769aa;color:white;border:0;cursor:pointer}
+button:hover{background:#104c7b}
+.balance{font-size:24px;color:#087443;font-weight:bold}
+#qrcode{margin:15px}
+</style>
+</head>
+<body>
+<header>
+<h1>EasyToll</h1>
+<p>Pay in advance. Travel without waiting.</p>
+</header>
+<main>
+<div class="card">
+<h2>User Registration</h2>
+<input id="name" placeholder="Full name">
+<input id="email" type="email" placeholder="Email">
+<input id="vehicle" placeholder="Vehicle number">
+<button onclick="register()">Register</button>
+<p id="userMessage"></p>
+</div>
+
+<div class="card">
+<h2>Toll E-Wallet</h2>
+<p>Wallet Balance: <span class="balance" id="balance">₹0</span></p>
+<input id="amount" type="number" min="1" placeholder="Amount to add">
+<button onclick="addMoney()">Add Money</button>
+</div>
+
+<div class="card">
+<h2>Buy Toll E-Ticket</h2>
+<select id="route">
+<option value="Chennai Central Toll">Chennai Central Toll - ₹100</option>
+<option value="City Highway Toll">City Highway Toll - ₹150</option>
+<option value="Airport Toll">Airport Toll - ₹80</option>
+</select>
+<button onclick="buyTicket()">Buy E-Ticket</button>
+<button onclick="applyPass()">Apply Toll Pass - ₹500</button>
+<p id="ticketMessage"></p>
+<div id="qrcode"></div>
+</div>
+
+<div class="card">
+<h2>Transaction History</h2>
+<ul id="history"></ul>
+</div>
+
+<div class="card">
+<h2>Admin Panel</h2>
+<p>Approve pending toll pass applications.</p>
+<ul id="applications"></ul>
+<input id="tollName" placeholder="New toll location">
+<input id="tollFee" type="number" min="1" placeholder="Toll fee (₹)">
+<button onclick="createToll()">Add Toll Details</button>
+<ul id="tollList"></ul>
+</div>
+
+<div class="card">
+<h2>Toll Gate Verification</h2>
+<input id="verifyId" placeholder="Enter ticket/pass ID">
+<button onclick="verify()">Verify Ticket or Pass</button>
+<p id="verifyMessage"></p>
+</div>
+</main>
+
+<script>
+let user=null;
+let balance=0;
+let records=[];
+let passes=[];
+let tolls=[
+ {name:"Chennai Central Toll",fee:100},
+ {name:"City Highway Toll",fee:150},
+ {name:"Airport Toll",fee:80}
+];
+
+function register(){
+ const name=document.getElementById("name").value.trim();
+ const email=document.getElementById("email").value.trim();
+ const vehicle=document.getElementById("vehicle").value.trim();
+
+ if(!name||!vehicle||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+   alert("Enter valid name, email and vehicle number.");
+   return;
+ }
+ user={name,email,vehicle};
+ document.getElementById("userMessage").textContent=
+   "Welcome "+name+"! Vehicle: "+vehicle;
+}
+
+function addMoney(){
+ if(!user){alert("Register first.");return;}
+ const amount=Number(document.getElementById("amount").value);
+ if(!Number.isFinite(amount)||amount<=0){
+   alert("Enter a valid amount.");return;
+ }
+ balance+=amount;
+ document.getElementById("balance").textContent="₹"+balance;
+ addHistory("Wallet recharge: ₹"+amount);
+}
+
+function makeRecord(type,location,fee){
+ const id="ET"+Date.now()+Math.floor(Math.random()*1000);
+ const record={id,type,location,fee,vehicle:user.vehicle,status:"Active"};
+ records.push(record);
+ document.getElementById("ticketMessage").textContent=
+   type+" created! ID: "+id+" | "+location+" | ₹"+fee;
+ document.getElementById("qrcode").innerHTML="";
+ if(window.QRCode){
+   new QRCode(document.getElementById("qrcode"),{
+     text:id,width:140,height:140
+   });
+ }else{
+   document.getElementById("qrcode").textContent="Ticket ID: "+id;
+ }
+ addHistory(type+": "+location+" (₹"+fee+")");
+}
+
+function buyTicket(){
+ if(!user){alert("Register first.");return;}
+ const location=document.getElementById("route").value;
+ const toll=tolls.find(t=>t.name===location);
+ if(!toll){alert("Toll not found.");return;}
+ if(balance<toll.fee){alert("Insufficient balance. Add money first.");return;}
+ balance-=toll.fee;
+ document.getElementById("balance").textContent="₹"+balance;
+ makeRecord("E-Ticket",location,toll.fee);
+}
+
+function applyPass(){
+ if(!user){alert("Register first.");return;}
+ const id="PASS"+Date.now();
+ passes.push({id,vehicle:user.vehicle,status:"Pending"});
+ document.getElementById("ticketMessage").textContent=
+   "Pass application submitted. ID: "+id+" (Awaiting admin approval)";
+ showApplications();
+}
+
+function showApplications(){
+ const list=document.getElementById("applications");
+ list.innerHTML="";
+ passes.forEach(p=>{
+   const li=document.createElement("li");
+   li.textContent=p.id+" | "+p.vehicle+" | "+p.status+" ";
+   if(p.status==="Pending"){
+     const btn=document.createElement("button");
+     btn.textContent="Approve";
+     btn.onclick=()=>{
+       if(!user || balance<500){
+         alert("For this demo, register a user and add at least ₹500 to the wallet.");
+         return;
+       }
+       balance-=500;
+       document.getElementById("balance").textContent="₹"+balance;
+       p.status="Approved";
+       records.push({
+         id:p.id,type:"Toll Pass",location:"All listed tolls",
+         fee:500,vehicle:p.vehicle,status:"Active"
+       });
+       addHistory("Toll pass approved: ₹500");
+       document.getElementById("ticketMessage").textContent=
+         "Toll pass approved! ID: "+p.id;
+       document.getElementById("qrcode").innerHTML="";
+       if(window.QRCode){
+         new QRCode(document.getElementById("qrcode"),p.id);
+       }
+       showApplications();
+     };
+     li.appendChild(btn);
+   }
+   list.appendChild(li);
+ });
+}
+
+function createToll(){
+ const name=document.getElementById("tollName").value.trim();
+ const fee=Number(document.getElementById("tollFee").value);
+ if(!name||!Number.isFinite(fee)||fee<=0){
+   alert("Enter a valid toll name and fee.");return;
+ }
+ if(tolls.some(t=>t.name.toLowerCase()===name.toLowerCase())){
+   alert("Toll already exists.");return;
+ }
+ tolls.push({name,fee});
+ const option=document.createElement("option");
+ option.value=name;
+ option.textContent=name+" - ₹"+fee;
+ document.getElementById("route").appendChild(option);
+ showTolls();
+}
+
+function showTolls(){
+ const list=document.getElementById("tollList");
+ list.innerHTML="";
+ tolls.forEach(t=>{
+   const li=document.createElement("li");
+   li.textContent=t.name+" - ₹"+t.fee;
+   list.appendChild(li);
+ });
+}
+
+function addHistory(text){
+ const li=document.createElement("li");
+ li.textContent=new Date().toLocaleString()+" - "+text;
+ document.getElementById("history").prepend(li);
+}
+
+function verify(){
+ const id=document.getElementById("verifyId").value.trim();
+ const record=records.find(r=>r.id===id&&r.status==="Active");
+ const pass=passes.find(p=>p.id===id&&p.status==="Approved");
+ document.getElementById("verifyMessage").textContent=
+   record||pass?"VALID: Ticket/pass approved.":"INVALID: ID not found or not approved.";
+}
+
+showTolls();
+showApplications();
+</script>
+</body>
+</html>
+```

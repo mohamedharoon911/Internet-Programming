@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoteOnline | Digital Election</title>
+<style>
+:root{--bg:#0b1020;--panel:#141c30;--panel2:#1b2640;--line:#293650;
+--text:#eef3ff;--muted:#9baac5;--blue:#7195ff;--green:#36d6a0;--red:#ff7185}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 10% 0%,#202d55,transparent 35%),var(--bg);
+color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer;transition:.2s}
+button:hover{filter:brightness(1.13);transform:translateY(-1px)}
+.top{height:75px;padding:0 5%;display:flex;align-items:center;justify-content:space-between;
+border-bottom:1px solid var(--line);background:#0b1020eF;position:sticky;top:0;z-index:5}
+.brand{font-size:23px;font-weight:800;letter-spacing:-1px}
+.brand span{color:var(--blue)}
+.pill{border:1px solid #315345;background:#112b2b;color:var(--green);
+border-radius:30px;padding:8px 13px;font-size:12px}
+.layout{max-width:1250px;margin:30px auto;padding:0 20px;display:grid;
+grid-template-columns:220px 1fr;gap:25px}
+.side,.panel,.stat,.candidate,.hero{background:linear-gradient(145deg,var(--panel),#11182a);
+border:1px solid var(--line);border-radius:18px}
+.side{padding:18px;height:max-content;position:sticky;top:95px}
+.nav{width:100%;display:flex;gap:10px;align-items:center;text-align:left;
+border:0;background:transparent;color:var(--muted);padding:13px;border-radius:10px;margin:3px 0}
+.nav.active,.nav:hover{background:#263455;color:white}
+main{min-width:0}
+.hero{padding:27px;background:linear-gradient(115deg,#263c70,#17243e 60%,#173e43);
+display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:22px}
+.eyebrow{color:#a8bdff;font-size:12px;text-transform:uppercase;letter-spacing:2px;font-weight:700}
+h1{font-size:clamp(25px,4vw,36px);margin:10px 0}
+h2{font-size:20px;margin:0 0 17px}
+p{color:var(--muted);line-height:1.6}
+.hero p{margin-bottom:0}
+.clock{font-size:22px;font-weight:800;color:#b9caff;text-align:center}
+.clock small{display:block;color:#b5c6e6;font-size:10px;letter-spacing:1px;margin-top:6px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.stat{padding:18px}
+.stat small{color:var(--muted)}
+.num{font-size:29px;font-weight:800;margin-top:12px}
+.panel{padding:23px;margin-bottom:22px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.candidates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.candidate{padding:18px;transition:.2s}
+.candidate.selected{border-color:var(--blue);box-shadow:0 0 0 2px #7195ff30}
+.avatar{width:58px;height:58px;border-radius:16px;background:#26375a;
+display:grid;place-items:center;font-size:28px;margin-bottom:14px}
+.candidate h3{margin:0 0 5px}
+.party{font-size:12px;color:var(--muted)}
+.description{font-size:13px;min-height:42px}
+.btn{border:0;border-radius:10px;background:var(--blue);color:#0b1020;
+font-weight:800;padding:12px 16px}
+.btn.secondary{background:#293650;color:var(--text);border:1px solid #3b4b69}
+.btn.green{background:var(--green)}
+.btn.red{background:var(--red)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+input,select{width:100%;padding:12px 13px;background:#0c1425;color:var(--text);
+border:1px solid #33425e;border-radius:10px;outline:none;margin:7px 0 13px}
+input:focus,select:focus{border-color:var(--blue)}
+label{font-size:13px;color:#c3cee4}
+.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.notice{padding:13px;border-radius:10px;background:#182943;color:#c7d7ff;
+font-size:13px;margin:12px 0;line-height:1.6}
+.success{background:#12352d;color:#a7ffdf}
+.warning{background:#392b1d;color:#ffdb9c}
+.hidden{display:none!important}
+.barrow{margin:20px 0}
+.barlabel{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.track{height:11px;background:#263149;border-radius:20px;overflow:hidden;margin-top:9px}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#6e8dff,#38d5a0);
+border-radius:20px;transition:width .6s}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:13px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:#aebfe0}
+.badge{border-radius:30px;background:#193b32;color:var(--green);padding:5px 9px;font-size:11px}
+footer{text-align:center;padding:30px;color:#71809d;font-size:12px}
+.toast{position:fixed;bottom:25px;right:25px;background:#193b32;color:white;padding:15px 20px;
+border:1px solid #3c806c;border-radius:12px;z-index:20;box-shadow:0 10px 35px #0007}
+@media(max-width:760px){.layout{grid-template-columns:1fr;margin-top:16px}.side{position:static;
+display:flex;overflow:auto;gap:4px;padding:8px}.nav{white-space:nowrap;width:auto}
+.stats{grid-template-columns:1fr}.candidates{grid-template-columns:1fr}.hero{align-items:flex-start}
+.clock{display:none}.formrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Vote<span>Online.</span></div>
+  <div class="pill">● DEMO ELECTION</div>
+</header>
+
+<div class="layout">
+<aside class="side">
+  <button class="nav active" data-page="home">◈ &nbsp; Overview</button>
+  <button class="nav" data-page="vote">▣ &nbsp; Cast Your Vote</button>
+  <button class="nav" data-page="history">◷ &nbsp; My Voting Status</button>
+  <button class="nav" data-page="results">▥ &nbsp; Live Results</button>
+  <button class="nav" data-page="admin">⚙ &nbsp; Admin Console</button>
+</aside>
+
+<main>
+<section class="hero">
+  <div>
+    <div class="eyebrow">Election management system</div>
+    <h1>Every vote matters.</h1>
+    <p>A modern, interactive voting experience with transparent demo results.</p>
+  </div>
+  <div class="clock"><span id="clock">--:--:--</span><small>LOCAL TIME</small></div>
+</section>
+
+<div class="stats">
+  <div class="stat"><small>Total registered voters</small><div class="num" id="voterCount">0</div></div>
+  <div class="stat"><small>Votes submitted</small><div class="num" id="voteCount">0</div></div>
+  <div class="stat"><small>Participation rate</small><div class="num" id="turnout">0%</div></div>
+</div>
+
+<section id="home" class="page">
+  <div class="panel">
+    <div class="section-head"><h2>Election overview</h2><span class="badge" id="electionStatus">OPEN</span></div>
+    <p id="electionDescription">Choose your candidate after voter verification. Each demo voter ID can vote only once.</p>
+    <div class="notice">🔐 <b>Two-step demo verification</b><br>Enter a voter ID, then verify the one-time code shown by this local demonstration.</div>
+    <button class="btn" onclick="showPage('vote')">Get Started →</button>
+  </div>
+  <div class="panel">
+    <div class="section-head"><h2>Candidate directory</h2><button class="btn secondary" onclick="showPage('results')">View results</button></div>
+    <div class="candidates" id="homeCandidates"></div>
+  </div>
+</section>
+
+<section id="vote" class="page hidden">
+  <div class="panel">
+    <h2>01 / Voter verification</h2>
+    <p>Enter a voter ID. For this demo, any non-empty ID is accepted unless already used.</p>
+    <label for="voterId">Voter ID</label>
+    <input id="voterId" placeholder="e.g. VOTER1001" maxlength="40">
+    <button class="btn" id="requestOtp">Request login OTP</button>
+    <div id="otpArea" class="hidden">
+      <div class="notice warning">Demo OTP: <b id="demoOtp"></b><br>This code is displayed here only for testing.</div>
+      <label for="otpInput">Enter OTP</label>
+      <input id="otpInput" inputmode="numeric" maxlength="6" placeholder="6-digit code">
+      <button class="btn green" id="verifyOtp">Verify and continue</button>
+    </div>
+    <div id="loginMessage" aria-live="polite"></div>
+  </div>
+
+  <div id="ballotArea" class="panel hidden">
+    <div class="section-head"><h2>02 / Select your candidate</h2><span class="badge">BALLOT</span></div>
+    <p>Select one candidate, review your choice, then confirm your vote.</p>
+    <div id="ballotCandidates" class="candidates"></div>
+    <div id="selectedMessage" class="notice">No candidate selected yet.</div>
+    <button id="submitVote" class="btn green" disabled>Confirm and submit vote</button>
+  </div>
+</section>
+
+<section id="history" class="page hidden">
+  <div class="panel">
+    <h2>My voting status</h2>
+    <p>Verify your voter ID above to view its local demo status. Your candidate choice is not shown here.</p>
+    <div class="formrow">
+      <div><label for="historyId">Voter ID</label><input id="historyId" placeholder="Enter your voter ID"></div>
+      <div style="align-self:end"><button class="btn" onclick="checkHistory()">Check status</button></div>
+    </div>
+    <div id="historyResult" class="notice">No voter ID checked.</div>
+  </div>
+</section>
+
+<section id="results" class="page hidden">
+  <div class="panel">
+    <div class="section-head"><h2>Live election results</h2><span class="badge">AUTO-REFRESH</span></div>
+    <p>Bars and vote counts update when votes are cast in this browser.</p>
+    <div id="resultsBars"></div>
+    <div class="notice">This demo displays candidate totals. It is not independently audited or cryptographically secured.</div>
+  </div>
+</section>
+
+<section id="admin" class="page hidden">
+  <div class="panel" id="adminLogin">
+    <h2>Administrator access</h2>
+    <p>Sign in to manage candidates and demo voter records.</p>
+    <label for="adminPassword">Demo admin password</label>
+    <input id="adminPassword" type="password" placeholder="Enter admin password">
+    <button class="btn" onclick="loginAdmin()">Unlock console</button>
+    <div class="notice">Demo password: <b>admin123</b>. Do not use this pattern for real authentication.</div>
+    <div id="adminMessage"></div>
+  </div>
+  <div id="adminArea" class="hidden">
+    <div class="panel">
+      <div class="section-head"><h2>Candidate management</h2><button class="btn secondary" onclick="logoutAdmin()">Lock console</button></div>
+      <div class="formrow">
+        <div><label for="candidateName">Candidate name</label><input id="candidateName" placeholder="Full name"></div>
+        <div><label for="candidateParty">Party / group</label><input id="candidateParty" placeholder="Party or group"></div>
+      </div>
+      <label for="candidateDescription">Candidate description</label>
+      <input id="candidateDescription" placeholder="Short candidate introduction">
+      <button class="btn" onclick="addCandidate()">+ Add candidate</button>
+    </div>
+    <div class="panel">
+      <h2>Voter list management</h2>
+      <p>Import voter IDs from a CSV or text file. The first column or first value on each line is treated as the voter ID.</p>
+      <input id="voterFile" type="file" accept=".csv,.txt">
+      <button class="btn secondary" onclick="importVoters()">Import voter list</button>
+      <div class="tablewrap" style="margin-top:18px"><table>
+        <thead><tr><th>Voter ID</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="voterTable"></tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <h2>Election controls</h2>
+      <label for="electionToggle">Election status</label>
+      <select id="electionToggle" onchange="setElectionStatus(this.value)">
+        <option value="open">Open for voting</option>
+        <option value="closed">Close election</option>
+      </select>
+      <button class="btn red" onclick="resetElection()">Reset all demo votes</button>
+      <button class="btn secondary" onclick="exportResults()">Export results CSV</button>
+      <div class="notice warning">Reset permanently clears local demo voting records in this browser. Export first if you need a copy.</div>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+<footer>VoteOnline · Internet Programming Lab · Educational demonstration only</footer>
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script>
+const KEY="voteonline_advanced_demo_v1";
+const initial={
+  candidates:[
+    {id:1,name:"Aarav Sharma",party:"Progress Alliance",description:"Focused on education, digital access and public services.",icon:"👨‍💼"},
+    {id:2,name:"Diya Nair",party:"People First",description:"Prioritizes sustainability, inclusion and community growth.",icon:"👩‍💼"},
+    {id:3,name:"Kabir Rao",party:"Future Forum",description:"Supports innovation, skills development and infrastructure.",icon:"🧑‍💼"},
+    {id:4,name:"Meera Iyer",party:"Unity Group",description:"Advocates transparent governance and local development.",icon:"👩‍💻"}
+  ],
+  voters:[],
+  votes:[],
+  open:true,
+  nextId:5
+};
+let db=loadDB(), currentVoter="", pendingOtp="", selectedCandidate=null, verified=false, adminUnlocked=false;
+
+function loadDB(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY));
+    if(saved && Array.isArray(saved.candidates) && Array.isArray(saved.voters) && Array.isArray(saved.votes))
+      return saved;
+  }catch(e){}
+  return structuredClone(initial);
+}
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(msg){
+  const el=document.getElementById("toast");el.textContent=msg;el.classList.remove("hidden");
+  setTimeout(()=>el.classList.add("hidden"),2600);
+}
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("hidden",p.id!==id));
+  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+  if(id==="admin" && !adminUnlocked) document.getElementById("adminPassword").focus();
+  if(id==="results")renderResults();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+
+function candidateCard(c,ballot=false){
+  const chosen=selectedCandidate===c.id;
+  return `<article class="candidate ${chosen&&ballot?"selected":""}">
+    <div class="avatar">${c.icon||"🗳️"}</div>
+    <h3>${escapeHTML(c.name)}</h3><div class="party">${escapeHTML(c.party)}</div>
+    <p class="description">${escapeHTML(c.description||"Candidate information")}</p>
+    ${ballot?`<button class="btn ${chosen?"green":"secondary"}" onclick="selectCandidate(${c.id})">${chosen?"✓ Selected":"Select candidate"}</button>`:""}
+  </article>`;
+}
+function renderCandidates(){
+  document.getElementById("homeCandidates").innerHTML=db.candidates.map(c=>candidateCard(c)).join("")||"<p>No candidates added.</p>";
+  document.getElementById("ballotCandidates").innerHTML=db.candidates.map(c=>candidateCard(c,true)).join("")||"<p>No candidates available.</p>";
+}
+function renderResults(){
+  const total=db.votes.length;
+  document.getElementById("resultsBars").innerHTML=db.candidates.map(c=>{
+    const count=db.votes.filter(v=>v.candidateId===c.id).length;
+    const percent=total?Math.round(count/total*100):0;
+    return `<div class="barrow"><div class="barlabel"><b>${escapeHTML(c.name)}</b><span>${count} votes · ${percent}%</span></div>
+    <div class="track"><div class="fill" style="width:${percent}%"></div></div></div>`;
+  }).join("")||"<p>No candidates yet.</p>";
+}
+function renderVoters(){
+  document.getElementById("voterTable").innerHTML=db.voters.map(v=>`<tr>
+    <td>${escapeHTML(v.id)}</td><td>${v.voted?'<span class="badge">Voted</span>':'Not voted'}</td>
+    <td><button class="btn secondary" onclick="removeVoter('${encodeURIComponent(v.id)}')">Remove</button></td></tr>`).join("")||'<tr><td colspan="3">No registered voter IDs imported.</td></tr>';
+}
+function renderAll(){
+  document.getElementById("voterCount").textContent=db.voters.length;
+  document.getElementById("voteCount").textContent=db.votes.length;
+  document.getElementById("turnout").textContent=(db.voters.length?Math.round(db.votes.length/db.voters.length*100):0)+"%";
+  document.getElementById("electionStatus").textContent=db.open?"OPEN":"CLOSED";
+  document.getElementById("electionDescription").textContent=db.open?"Voting is open in this local demonstration.":"Voting is currently closed by the administrator.";
+  document.getElementById("electionToggle").value=db.open?"open":"closed";
+  renderCandidates();renderResults();renderVoters();
+  if(!db.open)document.getElementById("submitVote").disabled=true;
+}
+function selectCandidate(id){
+  if(!verified||!db.open)return;
+  selectedCandidate=id;renderCandidates();
+  const c=db.candidates.find(x=>x.id===id);
+  document.getElementById("selectedMessage").innerHTML=`You selected <b>${escapeHTML(c.name)}</b> (${escapeHTML(c.party)}). Review before submitting.`;
+  document.getElementById("submitVote").disabled=false;
+}
+function voterRecord(id){return db.voters.find(v=>v.id.toLowerCase()===id.toLowerCase())}
+function hasVoted(id){return db.votes.some(v=>v.voterId.toLowerCase()===id.toLowerCase())}
+document.getElementById("requestOtp").addEventListener("click",()=>{
+  const id=document.getElementById("voterId").value.trim();
+  const msg=document.getElementById("loginMessage");
+  if(!id){msg.innerHTML='<div class="notice warning">Enter a voter ID first.</div>';return}
+  if(!db.open){msg.innerHTML='<div class="notice warning">This election is closed.</div>';return}
+  if(hasVoted(id)){msg.innerHTML='<div class="notice warning">This voter ID has already voted.</div>';return}
+  currentVoter=id;verified=false;selectedCandidate=null;
+  pendingOtp=String(Math.floor(100000+Math.random()*900000));
+  document.getElementById("demoOtp").textContent=pendingOtp;
+  document.getElementById("otpInput").value="";
+  document.getElementById("otpArea").classList.remove("hidden");
+  document.getElementById("ballotArea").classList.add("hidden");
+  msg.innerHTML='<div class="notice">OTP generated for this demo. It is not sent by SMS or email.</div>';
+});
+document.getElementById("verifyOtp").addEventListener("click",()=>{
+  const input=document.getElementById("otpInput").value.trim();
+  if(!currentVoter||input!==pendingOtp){
+    document.getElementById("loginMessage").innerHTML='<div class="notice warning">Incorrect OTP. Please try again.</div>';return;
+  }
+  if(hasVoted(currentVoter)){document.getElementById("loginMessage").innerHTML='<div class="notice warning">This voter has already voted.</div>';return}
+  if(!db.voters.some(v=>v.id.toLowerCase()===currentVoter.toLowerCase())){
+    db.voters.push({id:currentVoter,voted:false});
+  }
+  verified=true;pendingOtp="";
+  document.getElementById("loginMessage").innerHTML='<div class="notice success">✓ Verification successful. Your ballot is unlocked.</div>';
+  document.getElementById("ballotArea").classList.remove("hidden");
+  document.getElementById("submitVote").disabled=true;
+  renderAll();
+});
+document.getElementById("submitVote").addEventListener("click",()=>{
+  if(!verified||!selectedCandidate||!db.open)return;
+  if(hasVoted(currentVoter)){toast("This voter ID has already voted.");return}
+  const c=db.candidates.find(x=>x.id===selectedCandidate);
+  if(!c){toast("Candidate no longer exists.");return}
+  if(!confirm("Submit your vote? This action cannot be undone in the demo."))return;
+  db.votes.push({voterId:currentVoter,candidateId:c.id,submittedAt:new Date().toISOString()});
+  const voter=voterRecord(currentVoter);if(voter)voter.voted=true;
+  verified=false;pendingOtp="";selectedCandidate=null;
+  document.getElementById("ballotArea").classList.add("hidden");
+  document.getElementById("otpArea").classList.add("hidden");
+  document.getElementById("loginMessage").innerHTML='<div class="notice success">✓ Vote recorded! Your confirmation ID is '+escapeHTML("VO-"+Date.now().toString().slice(-8))+'</div>';
+  saveDB();toast("Vote submitted successfully.");showPage("history");
+  document.getElementById("historyId").value=currentVoter;checkHistory();
+});
+function checkHistory(){
+  const id=document.getElementById("historyId").value.trim();
+  const result=document.getElementById("historyResult");
+  if(!id){result.textContent="Enter a voter ID.";return}
+  result.innerHTML=hasVoted(id)?'<span class="badge">Vote submitted</span><br>Your demo vote has been recorded. Candidate choice is not displayed.':
+    'No vote has been recorded for this voter ID.';
+}
+function loginAdmin(){
+  if(document.getElementById("adminPassword").value==="admin123"){
+    adminUnlocked=true;document.getElementById("adminLogin").classList.add("hidden");
+    document.getElementById("adminArea").classList.remove("hidden");toast("Admin console unlocked.");
+  }else document.getElementById("adminMessage").innerHTML='<div class="notice warning">Incorrect demo password.</div>';
+}
+function logoutAdmin(){
+  adminUnlocked=false;document.getElementById("adminLogin").classList.remove("hidden");
+  document.getElementById("adminArea").classList.add("hidden");document.getElementById("adminPassword").value="";
+}
+function addCandidate(){
+  if(!adminUnlocked)return;
+  const name=document.getElementById("candidateName").value.trim();
+  const party=document.getElementById("candidateParty").value.trim();
+  const description=document.getElementById("candidateDescription").value.trim();
+  if(!name||!party){toast("Candidate name and party are required.");return}
+  db.candidates.push({id:db.nextId++,name,party,description,icon:"🗳️"});
+  document.getElementById("candidateName").value="";
+  document.getElementById("candidateParty").value="";
+  document.getElementById("candidateDescription").value="";
+  saveDB();toast("Candidate added.");
+}
+async function importVoters(){
+  if(!adminUnlocked)return;
+  const file=document.getElementById("voterFile").files[0];
+  if(!file){toast("Choose a CSV or text file first.");return}
+  const text=await file.text();
+  const ids=text.split(/\r?\n/).map(line=>line.split(",")[0].trim().replace(/^"|"$/g,""))
+    .filter((id,i)=>id&&!(i===0&&/voter.?id/i.test(id)));
+  let added=0;
+  ids.forEach(id=>{if(!voterRecord(id)){db.voters.push({id,voted:hasVoted(id)});added++}});
+  saveDB();toast(`${added} voter ID(s) imported.`);
+}
+function removeVoter(encoded){
+  if(!adminUnlocked)return;
+  const id=decodeURIComponent(encoded);
+  if(hasVoted(id)){toast("Cannot remove a voter who has already voted.");return}
+  db.voters=db.voters.filter(v=>v.id!==id);saveDB();toast("Voter removed.");
+}
+function setElectionStatus(value){
+  if(!adminUnlocked)return;
+  db.open=value==="open";saveDB();toast(db.open?"Election opened.":"Election closed.");
+}
+function resetElection(){
+  if(!adminUnlocked)return;
+  if(!confirm("Clear ALL demo votes and registered voter IDs? This cannot be undone."))return;
+  db.votes=[];db.voters=[];saveDB();toast("Demo election data reset.");
+}
+function exportResults(){
+  if(!adminUnlocked)return;
+  const rows=[["Candidate","Party","Votes"],...db.candidates.map(c=>[
+    c.name,c.party,db.votes.filter(v=>v.candidateId===c.id).length
+  ])];
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
+  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  const a=document.createElement("a");a.href=url;a.download="voteonline-results.csv";a.click();URL.revokeObjectURL(url);
+}
+function updateClock(){document.getElementById("clock").textContent=new Date().toLocaleTimeString()}
+setInterval(updateClock,1000);updateClock();renderAll();
+</script>
+</body>
+</html>

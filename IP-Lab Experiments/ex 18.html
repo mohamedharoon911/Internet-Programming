@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriMart | Farm Supplies</title>
+<style>
+:root{--green:#176b43;--lime:#d9f99d;--bg:#f4f7f1;--ink:#19372a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}
+header{background:var(--green);color:white;padding:17px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-size:25px;font-weight:800}
+.logo span{color:var(--lime)}
+button,select,input,textarea{font:inherit;padding:10px;border:1px solid #d6dfd5;border-radius:9px}
+button{cursor:pointer;background:var(--green);color:white;border:0;font-weight:bold}
+button:hover{filter:brightness(1.12)}
+button.secondary{background:#e5eee4;color:var(--green)}
+button.danger{background:#b83b36}
+nav{display:flex;gap:7px;flex-wrap:wrap}
+nav button{background:#ffffff20}
+nav button.active{background:var(--lime);color:var(--green)}
+main{max-width:1200px;margin:24px auto;padding:0 18px}
+.hero{background:linear-gradient(115deg,#174d32,#378451);color:white;border-radius:20px;padding:30px;display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
+.hero h1{font-size:clamp(27px,4vw,44px);margin:0 0 12px}
+.hero p{max-width:580px;line-height:1.6}
+.hero .emoji{font-size:75px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin:20px 0}
+.stat,.panel,.product{background:white;border:1px solid #e4eae1;border-radius:15px;padding:17px}
+.stat small{color:#718075}.stat strong{display:block;font-size:25px;margin-top:8px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+.toolbar input{flex:1;min-width:180px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.product .pic{background:#eef5e8;border-radius:12px;text-align:center;font-size:55px;padding:18px}
+.product h3{margin-bottom:5px}
+.product p{color:#647369;line-height:1.5;font-size:14px}
+.price{font-size:22px;font-weight:bold;color:var(--green)}
+.product button{width:100%;margin-top:10px}
+.tag{display:inline-block;background:#e6f3dc;color:#28623c;border-radius:20px;padding:5px 9px;font-size:12px}
+.panel{margin:15px 0}
+.panel h2{margin-top:0}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.formgrid input,.formgrid select,.formgrid textarea{width:100%;min-width:0}
+table{width:100%;border-collapse:collapse;min-width:570px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #e5ebe2}
+th{background:#eef5e8}
+.tablewrap{overflow-x:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.muted{color:#718075}
+.notice{padding:12px;background:#eaf6df;border-radius:10px;margin:12px 0}
+footer{text-align:center;color:#718075;padding:25px}
+.hidden{display:none!important}
+@media(max-width:550px){header{align-items:flex-start}.hero{padding:22px}.hero .emoji{font-size:45px}main{padding:0 12px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🌱 Agri<span>Mart</span></div>
+  <nav>
+    <button class="active" onclick="setRole('customer',this)">Customer</button>
+    <button onclick="setRole('farmer',this)">Farmer</button>
+    <button onclick="setRole('account',this)">My Account</button>
+    <button onclick="setRole('orders',this)">My Orders</button>
+  </nav>
+</header>
+
+<main>
+<section class="hero">
+  <div>
+    <span class="tag">YOUR DIGITAL FARM STORE</span>
+    <h1>Grow Better.<br>Harvest More.</h1>
+    <p>Shop quality seeds, fertilizers, crop protection products and modern farming tools—all in one place.</p>
+    <button style="background:#d9f99d;color:#174d32" onclick="document.getElementById('catalog').scrollIntoView({behavior:'smooth'})">Explore Products →</button>
+  </div>
+  <div class="emoji">🌾🚜</div>
+</section>
+
+<div class="stats">
+  <div class="stat"><small>Available Products</small><strong id="productCount">0</strong></div>
+  <div class="stat"><small>Cart Items</small><strong id="cartCount">0</strong></div>
+  <div class="stat"><small>My Orders</small><strong id="orderCount">0</strong></div>
+  <div class="stat"><small>Wallet Balance</small><strong id="walletStat">₹0</strong></div>
+</div>
+
+<section id="catalog">
+<h2>🌿 Agricultural Products</h2>
+<div class="toolbar">
+  <input id="search" placeholder="Search seeds, tools, fertilizer..." oninput="renderProducts()">
+  <select id="category" onchange="renderProducts()">
+    <option value="All">All Categories</option>
+    <option>Seeds</option><option>Fertilizers</option><option>Pesticides</option><option>Equipment</option>
+  </select>
+  <select id="sort" onchange="renderProducts()">
+    <option value="featured">Featured</option>
+    <option value="low">Price: Low to High</option>
+    <option value="high">Price: High to Low</option>
+  </select>
+</div>
+<div id="products" class="products"></div>
+</section>
+
+<section id="customerPanel" class="panel">
+<h2>🛒 Shopping Cart & Checkout</h2>
+<div id="cart"></div>
+<div class="formgrid" style="margin-top:15px">
+  <input id="customerName" placeholder="Your name">
+  <input id="customerPhone" placeholder="Phone number">
+  <input id="address" placeholder="Full shipping address">
+</div>
+<div class="row" style="margin-top:12px">
+  <strong id="total">Total: ₹0</strong>
+  <button onclick="checkout()">Place Order with Wallet</button>
+</div>
+<p class="muted">Demo checkout uses your local browser wallet; no real payment is processed.</p>
+</section>
+
+<section id="accountPanel" class="panel hidden">
+<h2>👤 Customer Account</h2>
+<p>Demo customer account and wallet management.</p>
+<div class="formgrid">
+  <input id="accountName" placeholder="Customer name">
+  <input id="accountPhone" placeholder="Phone number">
+</div>
+<div class="row" style="margin-top:12px">
+  <button onclick="saveAccount()">Save Account</button>
+  <input id="recharge" type="number" min="1" placeholder="Recharge amount ₹">
+  <button onclick="rechargeWallet()">Add Wallet Money</button>
+</div>
+<div class="notice" id="accountInfo"></div>
+</section>
+
+<section id="ordersPanel" class="panel hidden">
+<h2>📦 My Orders & Shipping Tracker</h2>
+<div id="orders"></div>
+</section>
+
+<section id="farmerPanel" class="panel hidden">
+<h2>🚜 Farmer Dashboard</h2>
+<div class="notice">Demo farmer workspace. Add products, maintain listings, and update order and shipping status.</div>
+<div class="stats">
+  <div class="stat"><small>My Listings</small><strong id="farmerProducts">0</strong></div>
+  <div class="stat"><small>Orders to Manage</small><strong id="farmerOrders">0</strong></div>
+  <div class="stat"><small>Total Sales</small><strong id="sales">₹0</strong></div>
+</div>
+
+<h3>Add a Product</h3>
+<div class="formgrid">
+  <input id="pname" placeholder="Product name">
+  <select id="pcategory"><option>Seeds</option><option>Fertilizers</option><option>Pesticides</option><option>Equipment</option></select>
+  <input id="pprice" type="number" min="1" placeholder="Price ₹">
+  <input id="pstock" type="number" min="0" placeholder="Stock quantity">
+  <input id="pimage" placeholder="Product image URL (optional)">
+  <input id="pdescription" placeholder="Short description">
+</div>
+<div class="row" style="margin-top:12px">
+  <button onclick="addProduct()">Add Product</button>
+  <button class="secondary" onclick="resetProducts()">Reset Demo Products</button>
+</div>
+
+<h3>Manage My Products</h3>
+<div id="farmerProductList"></div>
+<h3>Manage Orders & Shipping</h3>
+<div id="farmerOrderList"></div>
+</section>
+</main>
+<footer>AgriMart · Internet Programming Lab Experiment 18 · Educational Demo</footer>
+
+<script>
+const initialProducts=[
+{id:1,name:"Premium Rice Seeds",category:"Seeds",price:450,stock:30,emoji:"🌾",description:"Quality seeds for healthy crop growth."},
+{id:2,name:"Organic Compost",category:"Fertilizers",price:320,stock:25,emoji:"🌱",description:"Organic nutrients to enrich soil."},
+{id:3,name:"Drip Irrigation Kit",category:"Equipment",price:1250,stock:12,emoji:"💧",description:"Water-saving irrigation equipment."},
+{id:4,name:"Neem Crop Spray",category:"Pesticides",price:280,stock:18,emoji:"🍃",description:"Neem-based crop protection product."},
+{id:5,name:"Vegetable Seed Pack",category:"Seeds",price:180,stock:40,emoji:"🥬",description:"A selection of vegetable seeds."},
+{id:6,name:"Hand Garden Tools",category:"Equipment",price:550,stock:15,emoji:"🧰",description:"Useful tools for everyday farm work."}
+];
+function load(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
+let products=load("agri_products",initialProducts);
+let cart=load("agri_cart",[]);
+let orders=load("agri_orders",[]);
+let wallet=Number(localStorage.getItem("agri_wallet")||1500);
+let account=load("agri_account",{name:"",phone:""});
+let role="customer",editingId=null;
+
+function save(){
+ localStorage.setItem("agri_products",JSON.stringify(products));
+ localStorage.setItem("agri_cart",JSON.stringify(cart));
+ localStorage.setItem("agri_orders",JSON.stringify(orders));
+ localStorage.setItem("agri_wallet",String(wallet));
+ localStorage.setItem("agri_account",JSON.stringify(account));
+}
+function money(n){return "₹"+Number(n).toLocaleString("en-IN")}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function setRole(next,btn){
+ role=next;
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+ ["customerPanel","accountPanel","ordersPanel","farmerPanel"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+ if(next==="customer")document.getElementById("customerPanel").classList.remove("hidden");
+ if(next==="account")document.getElementById("accountPanel").classList.remove("hidden");
+ if(next==="orders")document.getElementById("ordersPanel").classList.remove("hidden");
+ if(next==="farmer")document.getElementById("farmerPanel").classList.remove("hidden");
+ renderAll();
+}
+function renderProducts(){
+ let q=document.getElementById("search").value.toLowerCase();
+ let cat=document.getElementById("category").value;
+ let list=products.filter(p=>(p.name+" "+p.description+" "+p.category).toLowerCase().includes(q)&&(cat==="All"||p.category===cat));
+ let sort=document.getElementById("sort").value;
+ if(sort==="low")list.sort((a,b)=>a.price-b.price);
+ if(sort==="high")list.sort((a,b)=>b.price-a.price);
+ document.getElementById("products").innerHTML=list.length?list.map(p=>`
+ <article class="product">
+ <div class="pic">${p.image?`<img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.name)}" style="width:100%;height:100px;object-fit:contain">`:p.emoji||"🌿"}</div>
+ <p><span class="tag">${escapeHTML(p.category)}</span></p>
+ <h3>${escapeHTML(p.name)}</h3><p>${escapeHTML(p.description)}</p>
+ <p class="muted">Stock: ${p.stock}</p><div class="price">${money(p.price)}</div>
+ <button ${p.stock<1?"disabled":""} onclick="addToCart(${p.id})">${p.stock<1?"Out of Stock":"Add to Cart +"}</button>
+ </article>`).join(""):'<div class="panel">No products found. Try another search.</div>';
+ document.getElementById("productCount").textContent=products.length;
+}
+function addToCart(id){
+ let p=products.find(x=>x.id===id);if(!p||p.stock<1)return alert("Product is out of stock.");
+ let item=cart.find(x=>x.id===id);
+ if(item){if(item.qty>=p.stock)return alert("Maximum available stock reached.");item.qty++}
+ else cart.push({id,qty:1});
+ save();renderAll();
+}
+function changeQty(id,delta){
+ let item=cart.find(x=>x.id===id),p=products.find(x=>x.id===id);
+ if(!item)return;
+ if(delta>0&&item.qty>=p.stock)return alert("Maximum available stock reached.");
+ item.qty+=delta;if(item.qty<=0)cart=cart.filter(x=>x.id!==id);
+ save();renderAll();
+}
+function removeCart(id){cart=cart.filter(x=>x.id!==id);save();renderAll()}
+function renderCart(){
+ let total=0;
+ document.getElementById("cart").innerHTML=cart.length?cart.map(item=>{
+ let p=products.find(x=>x.id===item.id);if(!p)return "";
+ total+=p.price*item.qty;
+ return `<div class="row" style="justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0">
+ <span><b>${escapeHTML(p.name)}</b><br>${money(p.price)} each</span>
+ <span class="row"><button class="secondary" onclick="changeQty(${p.id},-1)">−</button>${item.qty}<button class="secondary" onclick="changeQty(${p.id},1)">+</button><button class="danger" onclick="removeCart(${p.id})">Remove</button></span>
+ </div>`}).join(""):'<p class="muted">Your cart is empty. Add products to begin.</p>';
+ document.getElementById("total").textContent="Total: "+money(total);
+}
+function checkout(){
+ if(!cart.length)return alert("Your cart is empty.");
+ let name=document.getElementById("customerName").value.trim()||account.name;
+ let phone=document.getElementById("customerPhone").value.trim()||account.phone;
+ let address=document.getElementById("address").value.trim();
+ if(!name||!phone||!address)return alert("Enter your name, phone number, and shipping address.");
+ for(let item of cart){let p=products.find(x=>x.id===item.id);if(!p||p.stock<item.qty)return alert("Insufficient stock for "+(p?.name||"a product"))}
+ let total=cart.reduce((s,item)=>s+products.find(p=>p.id===item.id).price*item.qty,0);
+ if(total>wallet)return alert("Insufficient wallet balance. Please recharge your wallet.");
+ wallet-=total;
+ let id="AG"+Date.now().toString().slice(-8);
+ orders.unshift({id,name,phone,address,items:cart.map(i=>({...i})),total,status:"Confirmed",shipping:"Processing",date:new Date().toLocaleString()});
+ cart.forEach(item=>{let p=products.find(x=>x.id===item.id);p.stock-=item.qty});
+ account={...account,name,phone};cart=[];save();renderAll();
+ alert("Order placed successfully! Order ID: "+id);
+}
+function saveAccount(){
+ account.name=document.getElementById("accountName").value.trim();
+ account.phone=document.getElementById("accountPhone").value.trim();
+ if(!account.name||!account.phone)return alert("Enter your name and phone number.");
+ save();renderAll();alert("Demo account saved.");
+}
+function rechargeWallet(){
+ let amount=Number(document.getElementById("recharge").value);
+ if(!Number.isFinite(amount)||amount<=0)return alert("Enter a valid recharge amount.");
+ wallet+=amount;document.getElementById("recharge").value="";save();renderAll();alert("Demo wallet recharged by "+money(amount));
+}
+function renderOrders(){
+ document.getElementById("orders").innerHTML=orders.length?orders.map(o=>`
+ <div class="panel">
+ <div class="row" style="justify-content:space-between"><h3>Order ${escapeHTML(o.id)}</h3><span class="tag">${escapeHTML(o.status)}</span></div>
+ <p>${escapeHTML(o.date)} · Total <b>${money(o.total)}</b></p>
+ <p>Shipping: <b>${escapeHTML(o.shipping)}</b></p>
+ <p>Address: ${escapeHTML(o.address)}</p>
+ <p>${o.items.map(i=>{let p=products.find(x=>x.id===i.id);return escapeHTML(p?.name||"Removed product")+" × "+i.qty}).join(", ")}</p>
+ </div>`).join(""):'<p class="muted">No orders yet.</p>';
+}
+function addProduct(){
+ let name=document.getElementById("pname").value.trim(),price=Number(document.getElementById("pprice").value),stock=Number(document.getElementById("pstock").value);
+ if(!name||!Number.isFinite(price)||price<=0||!Number.isInteger(stock)||stock<0)return alert("Enter a product name, valid price, and non-negative whole-number stock.");
+ let category=document.getElementById("pcategory").value;
+ let image=document.getElementById("pimage").value.trim();
+ let description=document.getElementById("pdescription").value.trim()||"Fresh agricultural supply.";
+ products.unshift({id:Date.now(),name,category,price,stock,emoji:({Seeds:"🌾",Fertilizers:"🌱",Pesticides:"🍃",Equipment:"🧰"})[category],image,description});
+ ["pname","pprice","pstock","pimage","pdescription"].forEach(id=>document.getElementById(id).value="");
+ save();renderAll();alert("Product added.");
+}
+function deleteProduct(id){
+ if(!confirm("Delete this product listing?"))return;
+ products=products.filter(p=>p.id!==id);cart=cart.filter(i=>i.id!==id);save();renderAll();
+}
+function editProduct(id){
+ let p=products.find(x=>x.id===id);if(!p)return;
+ let name=prompt("Product name:",p.name);if(name===null)return;
+ let price=Number(prompt("Price:",p.price));if(!Number.isFinite(price)||price<=0)return alert("Invalid price.");
+ let stock=Number(prompt("Stock quantity:",p.stock));if(!Number.isInteger(stock)||stock<0)return alert("Invalid stock.");
+ p.name=name.trim()||p.name;p.price=price;p.stock=stock;save();renderAll();
+}
+function updateStatus(id,field,value){
+ let o=orders.find(x=>x.id===id);if(!o)return;
+ o[field]=value;save();renderAll();
+}
+function resetProducts(){
+ if(!confirm("Reset products to the original demo catalogue?"))return;
+ products=initialProducts.map(p=>({...p}));save();renderAll();
+}
+function renderFarmer(){
+ document.getElementById("farmerProducts").textContent=products.length;
+ document.getElementById("farmerOrders").textContent=orders.length;
+ document.getElementById("sales").textContent=money(orders.filter(o=>o.status!=="Cancelled").reduce((s,o)=>s+o.total,0));
+ document.getElementById("farmerProductList").innerHTML=products.length?`<div class="tablewrap"><table><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr>${products.map(p=>`<tr><td>${escapeHTML(p.name)}</td><td>${money(p.price)}</td><td>${p.stock}</td><td><button onclick="editProduct(${p.id})">Edit</button> <button class="danger" onclick="deleteProduct(${p.id})">Delete</button></td></tr>`).join("")}</table></div>`:"No product listings.";
+ document.getElementById("farmerOrderList").innerHTML=orders.length?orders.map(o=>`<div class="panel">
+ <b>${escapeHTML(o.id)}</b> · ${escapeHTML(o.name)} · ${money(o.total)}
+ <p class="muted">${escapeHTML(o.address)}</p>
+ <div class="formgrid">
+ <label>Order status<select onchange="updateStatus('${o.id}','status',this.value)">${["Confirmed","Processing","Packed","Cancelled"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}</select></label>
+ <label>Shipping status<select onchange="updateStatus('${o.id}','shipping',this.value)">${["Processing","Packed","Shipped","Out for Delivery","Delivered"].map(s=>`<option ${o.shipping===s?"selected":""}>${s}</option>`).join("")}</select></label>
+ </div></div>`).join(""):"No orders to manage.";
+}
+function renderAll(){
+ renderProducts();renderCart();renderOrders();renderFarmer();
+ document.getElementById("cartCount").textContent=cart.reduce((s,i)=>s+i.qty,0);
+ document.getElementById("orderCount").textContent=orders.length;
+ document.getElementById("walletStat").textContent=money(wallet);
+ document.getElementById("accountInfo").textContent=`Name: ${account.name||"Not set"} | Phone: ${account.phone||"Not set"} | Wallet: ${money(wallet)}`;
+ document.getElementById("accountName").value=account.name;
+ document.getElementById("accountPhone").value=account.phone;
+}
+renderAll();
+</script>
+</body>
+</html>

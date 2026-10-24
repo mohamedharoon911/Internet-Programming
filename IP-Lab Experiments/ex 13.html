@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlossomGifts</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#fff8f8;color:#402b35}
+header{background:#b83e68;color:white;padding:22px;text-align:center}
+nav{background:#ffe2eb;padding:12px;text-align:center}
+nav a{margin:12px;color:#8d2450;text-decoration:none;font-weight:bold}
+main{max-width:1050px;margin:auto;padding:20px}
+.hero{text-align:center;padding:22px;background:#fce4ec;border-radius:14px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+input,select,button{padding:11px;border:1px solid #e1b6c5;border-radius:7px}
+.controls input{flex:1;min-width:180px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.card{background:white;padding:17px;border-radius:12px;text-align:center;box-shadow:0 3px 10px #ead5dc}
+.pic{font-size:65px;background:#fff0f4;border-radius:10px;padding:14px}
+.price{color:#b83265;font-weight:bold;font-size:18px}
+button{background:#b83e68;color:white;border:0;cursor:pointer}
+button:hover{background:#8e2450}
+section{margin-top:28px}
+.cart-item{padding:10px;border-bottom:1px solid #edd5dd}
+#message{color:#16834a;font-weight:bold}
+footer{text-align:center;background:#ffe2eb;padding:16px;margin-top:25px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌸 BlossomGifts</h1>
+  <p>Flowers, gifts and happiness delivered with love!</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#products">Shop Gifts</a>
+  <a href="#cart">Shopping Cart</a>
+</nav>
+
+<main>
+<section id="home" class="hero">
+  <h2>Make Every Occasion Special 💝</h2>
+  <p>Birthday • Anniversary • Love • Celebration</p>
+  <p>Choose a gift, schedule delivery and place your order.</p>
+</section>
+
+<section id="products">
+  <h2>Our Gift Collection</h2>
+  <div class="controls">
+    <input id="search" placeholder="Search flowers or gifts..." oninput="displayProducts()">
+    <select id="category" onchange="displayProducts()">
+      <option value="All">All Categories</option>
+      <option value="Flowers">Flowers</option>
+      <option value="Gifts">Gifts</option>
+      <option value="Baskets">Gift Baskets</option>
+    </select>
+    <select id="occasion" onchange="displayProducts()">
+      <option value="All">All Occasions</option>
+      <option value="Birthday">Birthday</option>
+      <option value="Love">Love</option>
+      <option value="Anniversary">Anniversary</option>
+    </select>
+  </div>
+  <div class="products" id="productList"></div>
+</section>
+
+<section id="cart">
+  <h2>🛒 Shopping Cart</h2>
+  <div id="cartItems">Your cart is empty.</div>
+  <h3>Total: ₹<span id="total">0</span></h3>
+  <button onclick="clearCart()">Clear Cart</button>
+</section>
+
+<section>
+  <h2>Delivery & Checkout</h2>
+  <form id="checkout">
+    <p><input id="customer" placeholder="Customer name" required></p>
+    <p><input id="phone" type="tel" placeholder="Phone number" required pattern="[0-9]{10}" title="Enter a 10-digit phone number"></p>
+    <p><input id="address" placeholder="Delivery address" required></p>
+    <p>Delivery date: <input id="date" type="date" required></p>
+    <p>Delivery time:
+      <select id="time">
+        <option>10 AM - 12 PM</option>
+        <option>12 PM - 3 PM</option>
+        <option>3 PM - 6 PM</option>
+      </select>
+    </p>
+    <button type="submit">Place Order</button>
+  </form>
+  <p id="message"></p>
+  <div id="orderHistory"></div>
+</section>
+</main>
+
+<footer>© 2026 BlossomGifts | Made with 💗</footer>
+
+<script>
+const products = [
+ {id:1,name:"Rose Bouquet",category:"Flowers",occasion:"Love",price:499,emoji:"🌹"},
+ {id:2,name:"Birthday Flowers",category:"Flowers",occasion:"Birthday",price:399,emoji:"💐"},
+ {id:3,name:"Chocolate Gift Box",category:"Gifts",occasion:"Birthday",price:299,emoji:"🍫"},
+ {id:4,name:"Anniversary Roses",category:"Flowers",occasion:"Anniversary",price:699,emoji:"🌷"},
+ {id:5,name:"Teddy Bear",category:"Gifts",occasion:"Love",price:349,emoji:"🧸"},
+ {id:6,name:"Fruit Gift Basket",category:"Baskets",occasion:"Birthday",price:599,emoji:"🎁"}
+];
+
+let cart = [];
+
+function displayProducts(){
+ const search = document.getElementById("search").value.toLowerCase();
+ const category = document.getElementById("category").value;
+ const occasion = document.getElementById("occasion").value;
+
+ const filtered = products.filter(p =>
+   p.name.toLowerCase().includes(search) &&
+   (category === "All" || p.category === category) &&
+   (occasion === "All" || p.occasion === occasion)
+ );
+
+ document.getElementById("productList").innerHTML = filtered.length
+ ? filtered.map(p => `
+   <div class="card">
+     <div class="pic">${p.emoji}</div>
+     <h3>${p.name}</h3>
+     <p>${p.category} | ${p.occasion}</p>
+     <p class="price">₹${p.price}</p>
+     <button onclick="addToCart(${p.id})">Add to Cart</button>
+   </div>`).join("")
+ : "<p>No products found.</p>";
+}
+
+function addToCart(id){
+ const item = cart.find(p => p.id === id);
+ if(item) item.qty++;
+ else cart.push({...products.find(p => p.id === id),qty:1});
+ displayCart();
+}
+
+function displayCart(){
+ const area = document.getElementById("cartItems");
+ if(cart.length === 0){
+   area.textContent = "Your cart is empty.";
+ }else{
+   area.innerHTML = cart.map(p => `
+    <div class="cart-item">
+      ${p.emoji} ${p.name} — ₹${p.price} ×
+      <button onclick="changeQty(${p.id},-1)">−</button>
+      ${p.qty}
+      <button onclick="changeQty(${p.id},1)">+</button>
+      <button onclick="removeItem(${p.id})">Remove</button>
+    </div>`).join("");
+ }
+ document.getElementById("total").textContent =
+   cart.reduce((sum,p)=>sum+p.price*p.qty,0);
+}
+
+function changeQty(id,amount){
+ const item = cart.find(p=>p.id===id);
+ if(item) item.qty += amount;
+ cart = cart.filter(p=>p.qty>0);
+ displayCart();
+}
+
+function removeItem(id){
+ cart = cart.filter(p=>p.id!==id);
+ displayCart();
+}
+
+function clearCart(){
+ cart = [];
+ displayCart();
+}
+
+document.getElementById("date").min =
+ new Date().toLocaleDateString("en-CA");
+
+document.getElementById("checkout").addEventListener("submit",function(e){
+ e.preventDefault();
+
+ if(cart.length===0){
+   document.getElementById("message").textContent =
+     "Please add a product to your cart first.";
+   return;
+ }
+
+ const orderId = "BG" + Date.now().toString().slice(-6);
+ const total = cart.reduce((sum,p)=>sum+p.price*p.qty,0);
+
+ document.getElementById("message").textContent =
+   `Order confirmed! Order ID: ${orderId}. Total: ₹${total}. Thank you, ${document.getElementById("customer").value}!`;
+
+ document.getElementById("orderHistory").innerHTML =
+   `<h3>Order Summary</h3>
+    <p>Order ID: ${orderId}</p>
+    <p>Delivery: ${document.getElementById("date").value},
+    ${document.getElementById("time").value}</p>
+    <p>Address: ${document.getElementById("address").value}</p>
+    <p>Items: ${cart.map(p=>p.name+" × "+p.qty).join(", ")}</p>`;
+
+ cart = [];
+ displayCart();
+ this.reset();
+ document.getElementById("date").min =
+   new Date().toLocaleDateString("en-CA");
+});
+
+displayProducts();
+displayCart();
+</script>
+</body>
+</html>
